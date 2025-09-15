@@ -10,11 +10,14 @@ def web():
            <body>
                <h1>web-сервер на flask</h1>
                <a href="/author">author</a>
-           <body>
-        <html>"""
+           </body>
+        </html>""", 200, {
+            'X-Server': 'sample',
+            'Content-Type': 'text/plain; charset=utf-8'
+        }
 
-@app. route ("/author")
-def author() :
+@app.route("/author")
+def author():
     name = "Иванов Иван Иванович"
     group = "ФБИ-00"
     faculty = "ФБ"
@@ -29,23 +32,21 @@ def author() :
             </body>
         </html>"""
 
-from flask import Flask, url_for
-app = Flask(__name__)
-
-@app.route ("/image")
+@app.route("/image")
 def image():
-    path=url_for("static", filename="oak.jpg")
+    path = url_for("static", filename="oak.jpg")
     return '''
 <!doctype html>
 <html>
     <body>
         <h1>Дуб</h1> 
-        <img src="''' + path +'''">
+        <img src="''' + path + '''">
     </body>
 </html>
 '''
+
 count = 0
-@app.route ("/counter")
+@app.route("/counter")
 def counter():
     global count
     count += 1
@@ -65,7 +66,8 @@ def counter():
     </body>
 </html>
 '''
-@app.route ("/created")
+
+@app.route("/created")
 def created():
     return '''
 <!doctype html>
