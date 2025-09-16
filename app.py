@@ -3,7 +3,7 @@ import datetime
 app = Flask(__name__)
 
 @app.route("/")
-@app.route("/web")
+@app.route("/lab1/web")
 def web():
     return """<!doctype html>
         <html>
@@ -16,7 +16,7 @@ def web():
             'Content-Type': 'text/plain; charset=utf-8'
         }
 
-@app.route("/author")
+@app.route("/lab1/author")
 def author():
     name = "Иванов Иван Иванович"
     group = "ФБИ-00"
@@ -28,11 +28,11 @@ def author():
                 <p>Студент: """+ name + """</p> 
                 <p>Группа: """ + group + """</p>
                 <p>Факультет: """ + faculty + """</p>
-                <a href="/web">web</a>
+                <a href="/lab1/web">web</a>
             </body>
         </html>"""
 
-@app.route("/image")
+@app.route("/lab1/image")
 def image():
     path = url_for("static", filename="oak.jpg")
     css = url_for ("static", filename="lab1.css")
@@ -52,7 +52,7 @@ def image():
 '''
 
 count = 0
-@app.route("/counter")
+@app.route("/lab1/counter")
 def counter():
     global count
     count += 1
@@ -70,12 +70,12 @@ def counter():
         Запрошенный адрес: ''' + str(url) + '''<br>
         Ваш IP-адрес: ''' + str(client_ip) + '''<br>
         <br>
-        <a href="/r_counter">Очистить счетчик</a>
+        <a href="/lab1/r_counter">Очистить счетчик</a>
     </body>
 </html>
 '''
 
-@app.route("/created")
+@app.route("/lab1/created")
 def created():
     return '''
 <!doctype html>
@@ -91,8 +91,8 @@ def created():
 def not_found(err):
     return "нет такой страницы", 404
 
-@app.route('/r_counter')
+@app.route('/lab1/r_counter')
 def r_counter():
     global count
     count = 0
-    return redirect('/counter')
+    return redirect('/lab1/counter')
