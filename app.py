@@ -120,3 +120,25 @@ def r_counter():
     global count
     count = 0
     return redirect('/lab1/counter')
+
+@app.route('/lab1')
+def lab1():
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Лабораторная 1</title>
+    </head>
+    <body>
+        <p>
+        Flask — фреймворк для создания веб-приложений на языке программирования Python, 
+        использующий набор инструментов Werkzeug, а также шаблонизатор Jinja2. 
+        Относится к категории так называемых микрофреймворков — минималистичных каркасов веб-приложений, 
+        сознательно предоставляющих лишь самые базовые возможности.
+        </p>
+        <hr>
+        <a href="/">На главную</a>
+    </body>
+</html>
+'''
