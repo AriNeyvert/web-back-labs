@@ -166,3 +166,75 @@ def error405():
 @app.route("/error/418")
 def error418():
     return "<h1>418 - I'm a teapot (Я чайник)</h1>", 418
+
+@app.errorhandler(404)
+def not_found(err):
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Страница не найдена (404)</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background-color: #f8f9fa;
+                color: #212529;
+                text-align: center;
+                padding: 50px 20px;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            h1 {
+                color: #2c3e50;
+                font-weight: 600;
+                margin-bottom: 1rem;
+            }
+            p {
+                font-size: 18px;
+                margin-bottom: 1.5rem;
+            }
+            a {
+                color: #2980b9;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            ul {
+                list-style: none;
+                padding: 0;
+                text-align: left;
+                display: inline-block;
+            }
+            li {
+                margin-bottom: 10px;
+                padding-left: 1em;
+            }
+            li:before {
+                content: "•";
+                color: #2980b9;
+                display: inline-block;
+                width: 1em;
+                margin-left: -1em;
+            }
+            footer {
+                margin-top: 40px;
+                font-size: 14px;
+                color: #6c757d;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>ОШИБКА 404!!!</h1>
+        <p>Невозможно найти страницу :(</p>
+        <a href="/">Главная страница</a>
+        <br>
+        <img src="https://i.pinimg.com/1200x/48/0f/e9/480fe9f64b6aef3e9675793edcd962a9.jpg" alt="404">
+    </body>
+</html>
+''',404
