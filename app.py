@@ -238,3 +238,27 @@ def not_found(err):
     </body>
 </html>
 ''',404
+
+@app.route("/cause_error")
+def cause_error():
+    return 1/0
+@app.errorhandler(500)
+def internal_error(err):
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Ошибка 500</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center}
+            h1 { color: #212529; }
+        </style>
+    </head>
+    <body>
+        <h1>ОШИБКА 500</h1>
+        <p>Произошла внутренняя ошибка!<br></p>
+        <a href="/">Главная страница</a>
+    </body>
+</html>
+''', 500
