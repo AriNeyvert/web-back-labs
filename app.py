@@ -1,4 +1,5 @@
 from flask import Flask, url_for, request, redirect
+from flask import make_response
 import datetime
 app = Flask(__name__)
 
@@ -74,6 +75,12 @@ def image():
     </body>
 </html>
 '''
+    response = make_response(html)
+    response.headers['Content-Language'] = 'ru'
+
+    response.headers['Number_lab'] = 'LABA_1'
+    response.headers['Student'] = 'Neyvert Arina'
+    return response
 
 count = 0
 @app.route("/lab1/counter")
