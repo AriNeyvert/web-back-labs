@@ -1,6 +1,10 @@
 from flask import Flask, url_for, request, redirect
 import datetime
+
 app = Flask(__name__)
+
+# Глобальная переменная для хранения лога 404 ошибок
+error_log = []
 
 @app.route("/")
 @app.route("/index")
@@ -114,10 +118,6 @@ def created():
 </html>
 ''', 201
 
-@app.errorhandler(404)
-def not_found(err):
-    return "нет такой страницы", 404
-
 @app.route('/lab1/r_counter')
 def r_counter():
     global count
@@ -189,79 +189,127 @@ def error418():
 
 @app.errorhandler(404)
 def not_found(err):
-    return '''
+    # Получаем информацию о запросе
+    client_ip = request.remote_addr
+    access_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    requested_url = request.url
+    
+    # Добавляем запись в лог
+    log_entry = {
+        'ip': client_ip,
+        'date': access_date,
+        'url': requested_url
+    }
+    error_log.append(log_entry)
+    
+    # Формируем HTML страницу с ошибкой 404
+    return f'''
 <!doctype html>
 <html>
     <head>
         <meta charset="utf-8">
         <title>Страница не найдена (404)</title>
         <style>
-            body {
+            body {{
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 background-color: #f8f9fa;
                 color: #212529;
-                text-align: center;
-                padding: 50px 20px;
+                padding: 20px;
                 line-height: 1.6;
-            }
-            .container {
-                max-width: 600px;
+            }}
+            .container {{
+                max-width: 800px;
                 margin: 0 auto;
-            }
-            h1 {
-                color: #2c3e50;
-                font-weight: 600;
-                margin-bottom: 1rem;
-            }
-            p {
-                font-size: 18px;
-                margin-bottom: 1.5rem;
-            }
-            a {
-                color: #2980b9;
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            h1 {{
+                color: #dc3545;
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .info {{
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 20px 0;
+            }}
+            .log {{
+                background: #e9ecef;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 20px 0;
+                max-height: 300px;
+                overflow-y: auto;
+            }}
+            .log-entry {{
+                margin-bottom: 10px;
+                padding: 8px;
+                background: white;
+                border-radius: 3px;
+                border-left: 4px solid #007bff;
+            }}
+            a {{
+                color: #007bff;
                 text-decoration: none;
                 font-weight: 500;
-            }
-            a:hover {
+            }}
+            a:hover {{
                 text-decoration: underline;
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-                text-align: left;
-                display: inline-block;
-            }
-            li {
-                margin-bottom: 10px;
-                padding-left: 1em;
-            }
-            li:before {
-                content: "•";
-                color: #2980b9;
-                display: inline-block;
-                width: 1em;
-                margin-left: -1em;
-            }
-            footer {
-                margin-top: 40px;
-                font-size: 14px;
-                color: #6c757d;
-            }
+            }}
+            .center {{
+                text-align: center;
+                margin: 20px 0;
+            }}
         </style>
     </head>
     <body>
-        <h1>ОШИБКА 404!!!</h1>
-        <p>Невозможно найти страницу :(</p>
-        <a href="/">Главная страница</a>
-        <br>
-        <img src="https://i.pinimg.com/1200x/48/0f/e9/480fe9f64b6aef3e9675793edcd962a9.jpg" alt="404">
+        <div class="container">
+            <h1>ОШИБКА 404 - Страница не найдена</h1>
+            <img src="https://i.pinimg.com/1200x/48/0f/e9/480fe9f64b6aef3e9675793edcd962a9.jpg" alt="404">
+            <div class="info">
+                <p><strong>Ваш IP-адрес:</strong> {client_ip}</p>
+                <p><strong>Дата и время доступа:</strong> {access_date}</p>
+                <p><strong>Запрошенный адрес:</strong> {requested_url}</p>
+            </div>
+            
+            <div class="center">
+                <a href="/">Вернуться на главную страницу</a>
+            </div>
+            
+            <div class="log">
+                <h3>Лог ошибок 404:</h3>
+                {generate_log_html()}
+            </div>
+        </div>
     </body>
 </html>
-''',404
+''', 404
+
+def generate_log_html():
+    """Генерирует HTML для отображения лога ошибок"""
+    if not error_log:
+        return "<p>Лог пуст</p>"
+    
+    log_html = ""
+    for entry in reversed(error_log):  # Показываем последние записи первыми
+        log_html += f'''
+        <div class="log-entry">
+            <strong>IP:</strong> {entry['ip']} | 
+            <strong>Дата:</strong> {entry['date']} | 
+            <strong>URL:</strong> {entry['url']}
+        </div>
+        '''
+    return log_html
 
 @app.route("/cause_error")
 def cause_error():
     return 1/0
+
 @app.errorhandler(500)
 def internal_error(err):
     return '''
@@ -271,8 +319,8 @@ def internal_error(err):
         <meta charset="utf-8">
         <title>Ошибка 500</title>
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center}
-            h1 { color: #212529; }
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center}}
+            h1 {{ color: #212529; }}
         </style>
     </head>
     <body>
@@ -282,3 +330,4 @@ def internal_error(err):
     </body>
 </html>
 ''', 500
+
