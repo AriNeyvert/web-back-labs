@@ -10,17 +10,12 @@ body {
 
 /* Шапка */
 header {
-    background: linear-gradient(135deg, #432c50, #565921);
+    background: linear-gradient(135deg, #432c50, #566a2e);
     color: white;
     padding: 1.5rem 0;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-header h1 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 300;
+    font-size: 1.2rem;
 }
 
 /* Основное содержимое */
@@ -31,6 +26,7 @@ main {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-size: 1.1rem;
 }
 
 main br {
@@ -47,11 +43,12 @@ main br {
 
 /* Подвал */
 footer {
-    background: #4f285b;
+    background: #48345e;
     color: white;
     text-align: center;
     padding: 1.5rem 0;
     margin-top: 2rem;
+    border-top: 3px solid #2c3e50;
 }
 
 footer p {
@@ -59,43 +56,57 @@ footer p {
     font-size: 0.9rem;
 }
 
+/* Стили для условных данных */
+.anonymous {
+    color: #95a5a6;
+    font-style: italic;
+}
+
+.not-specified {
+    color: #e67e22;
+    font-style: italic;
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-    header h1 {
-        font-size: 1.4rem;
-        padding: 0 1rem;
+    header {
+        font-size: 1.1rem;
+        padding: 1rem;
     }
     
     main {
         margin: 1rem;
         padding: 1.5rem;
+        font-size: 1rem;
     }
     
     footer {
         padding: 1rem;
+        font-size: 0.9rem;
     }
 }
 
 @media (max-width: 480px) {
-    header h1 {
-        font-size: 1.2rem;
+    header {
+        font-size: 1rem;
     }
     
     main {
         margin: 0.5rem;
         padding: 1rem;
+        font-size: 0.9rem;
     }
     
-    footer p {
+    footer {
         font-size: 0.8rem;
     }
 }
 
 /* Дополнительные стили для улучшения читаемости */
 main {
-    font-size: 1.1rem;
+    line-height: 1.8;
 }
 
 footer {
-    border-top: 3px solid #502c58;
+    font-size: 0.95rem;
 }
