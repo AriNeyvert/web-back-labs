@@ -1,0 +1,101 @@
+/* Основные стили страницы */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Шапка */
+header {
+    background: linear-gradient(135deg, #432c50, #565921);
+    color: white;
+    padding: 1.5rem 0;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 300;
+}
+
+/* Основное содержимое */
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+main br {
+    margin-bottom: 0.5rem;
+    display: block;
+    content: "";
+}
+
+/* Стиль для примера с возведением в степень */
+.exponent {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+/* Подвал */
+footer {
+    background: #4f285b;
+    color: white;
+    text-align: center;
+    padding: 1.5rem 0;
+    margin-top: 2rem;
+}
+
+footer p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.4rem;
+        padding: 0 1rem;
+    }
+    
+    main {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    footer {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.2rem;
+    }
+    
+    main {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+    
+    footer p {
+        font-size: 0.8rem;
+    }
+}
+
+/* Дополнительные стили для улучшения читаемости */
+main {
+    font-size: 1.1rem;
+}
+
+footer {
+    border-top: 3px solid #502c58;
+}
