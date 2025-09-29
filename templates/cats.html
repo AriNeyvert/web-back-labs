@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Коллекция пород кошек</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .stats {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        .cat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 3px solid transparent;
+        }
+        .cat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: #3498db;
+        }
+        .cat-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 3px solid #f8f9fa;
+        }
+        .cat-name {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .cat-origin {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .cat-weight {
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
+        .cat-description {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .links {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            text-align: center;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        a:hover {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+        }
+        .counter {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        @media (max-width: 768px) {
+            .cat-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐱 Коллекция пород кошек</h1>
+        
+        <div class="stats">
+            <h2>Статистика коллекции</h2>
+            <p>Всего пород в коллекции: <span class="counter">{{ cats|length }}</span></p>
+            <p>Уникальных стран происхождения: {{ cats|map(attribute='origin')|unique|list|length }}</p>
+        </div>
+
+        <div class="cat-grid">
+            {% for cat in cats %}
+            <div class="cat-card">
+                <img src="{{ url_for('static', filename='images/' ~ cat.image) }}" alt="{{ cat.name }}" class="cat-image">
+                <div class="cat-name">{{ cat.name }}</div>
+                <div>
+                    <span class="cat-origin">📍 {{ cat.origin }}</span>
+                    <span class="cat-weight">⚖️ {{ cat.weight }}</span>
+                </div>
+                <p class="cat-description">{{ cat.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="links">
+            <a href="/lab2/">← Назад к лабораторной 2</a>
+            <a href="/">🏠 На главную</a>
+            <a href="/lab2/books">📚 Посмотреть книги</a>
+        </div>
+    </div>
+</body>
+</html>
