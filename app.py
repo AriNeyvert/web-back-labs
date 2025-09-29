@@ -20,6 +20,7 @@ def index():
         <h1>НГТУ, ФБ, WEB-программирование, часть 2.<br> Список лабораторных</h1>
         <ul>
             <li><a href="/lab1">Первая лабораторная</a></li>
+            <li><a href="/lab2">Вторая лабораторная</a></li>
         </ul>
         <footer>
             <p>Нейверт Арина Сергеевна</p>
@@ -609,3 +610,26 @@ def lab2():
 def filters():
     phrase = "О <b>сколько</b> <u>нам</u> <i>открытий</i> чудных ..."
     return render_template('filter.html', phrase = phrase)
+
+@app.route('/lab2/calc/<int:a>/<int:b>')
+def calc(a, b):
+    # Выполняем математические операции
+    operations = {
+        'sum': a + b,
+        'difference': a - b,
+        'product': a * b,
+        'quotient': a / b if b != 0 else 'деление на ноль',
+        'power': a ** b
+    }
+    
+    return render_template('calc.html', a=a, b=b, operations=operations)
+
+@app.route('/lab2/calc/')
+def calc_default():
+    """Перенаправляет с /lab2/calc/ на /lab2/calc/1/1"""
+    return redirect('/lab2/calc/1/1')
+
+@app.route('/lab2/calc/<int:a>')
+def calc_single(a):
+    """Перенаправляет с /lab2/calc/a на /lab2/calc/a/1"""
+    return redirect(f'/lab2/calc/{a}/1')
