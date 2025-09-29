@@ -6,6 +6,22 @@ app = Flask(__name__)
 # Глобальная переменная для хранения лога 404 ошибок
 error_log = []
 
+# Список книг для отображения
+books = [
+    {'author': 'Фёдор Достоевский', 'title': 'Преступление и наказание', 'genre': 'Роман', 'pages': 671},
+    {'author': 'Лев Толстой', 'title': 'Война и мир', 'genre': 'Роман-эпопея', 'pages': 1225},
+    {'author': 'Михаил Булгаков', 'title': 'Мастер и Маргарита', 'genre': 'Роман', 'pages': 480},
+    {'author': 'Антон Чехов', 'title': 'Рассказы', 'genre': 'Рассказ', 'pages': 350},
+    {'author': 'Александр Пушкин', 'title': 'Евгений Онегин', 'genre': 'Роман в стихах', 'pages': 240},
+    {'author': 'Николай Гоголь', 'title': 'Мёртвые души', 'genre': 'Поэма', 'pages': 352},
+    {'author': 'Иван Тургенев', 'title': 'Отцы и дети', 'genre': 'Роман', 'pages': 288},
+    {'author': 'Александр Дюма', 'title': 'Граф Монте-Кристо', 'genre': 'Приключенческий роман', 'pages': 928},
+    {'author': 'Джордж Оруэлл', 'title': '1984', 'genre': 'Антиутопия', 'pages': 328},
+    {'author': 'Рэй Брэдбери', 'title': '451° по Фаренгейту', 'genre': 'Научная фантастика', 'pages': 256},
+    {'author': 'Джоан Роулинг', 'title': 'Гарри Поттер и философский камень', 'genre': 'Фэнтези', 'pages': 432},
+    {'author': 'Джон Толкин', 'title': 'Властелин колец', 'genre': 'Фэнтези', 'pages': 1137}
+]
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -633,3 +649,8 @@ def calc_default():
 def calc_single(a):
     """Перенаправляет с /lab2/calc/a на /lab2/calc/a/1"""
     return redirect(f'/lab2/calc/{a}/1')
+
+# Новый обработчик для отображения списка книг
+@app.route('/lab2/books')
+def books_list():
+    return render_template('books.html', books=books)
