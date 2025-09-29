@@ -346,8 +346,74 @@ def flowers(flower_id):
     if flower_id >= len(flower_list):
         abort(404)
     else:
-        return "цветок:" + flower_list[flower_id]
-    
+        return f'''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Цветок #{flower_id}</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f9f9f9;
+            }}
+            .container {{
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            h1 {{
+                color: #2c3e50;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+            }}
+            .flower-info {{
+                background: #e8f4fc;
+                padding: 20px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border-left: 4px solid #3498db;
+            }}
+            .links {{
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+            }}
+            a {{
+                color: #3498db;
+                text-decoration: none;
+                margin-right: 15px;
+            }}
+            a:hover {{
+                text-decoration: underline;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Информация о цветке</h1>
+            
+            <div class="flower-info">
+                <h2>Цветок #{flower_id}</h2>
+                <p><strong>Название:</strong> {flower_list[flower_id]}</p>
+                <p><strong>ID цветка:</strong> {flower_id}</p>
+                <p><strong>Всего цветов в списке:</strong> {len(flower_list)}</p>
+            </div>
+            
+            <div class="links">
+                <a href="/lab2/all_flowers">Посмотреть все цветы</a>
+                <a href="/lab2/">Назад к лабораторной 2</a>
+                <a href="/">На главную</a>
+            </div>
+        </div>
+    </body>
+</html>
+'''
+
 @app.route('/lab2/add_flower/<name>')
 def add_flower(name):
     flower_list.append(name)
@@ -359,6 +425,164 @@ def add_flower(name):
     <p>Название нового цветка: {name} </p>
     <p>Всего цветов: {len(flower_list)}</p>
     <p>Полный список: {flower_list}</p>
+    </body>
+</html>
+'''
+
+@app.route('/lab2/add_flower/')
+def add_flower_empty():
+    return "вы не задали имя цветка", 400
+
+@app.route('/lab2/all_flowers')
+def all_flowers():
+    return f'''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Все цветы</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f9f9f9;
+            }}
+            .container {{
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            h1 {{
+                color: #2c3e50;
+                border-bottom: 2px solid #27ae60;
+                padding-bottom: 10px;
+            }}
+            .stats {{
+                background: #d5f4e6;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border-left: 4px solid #27ae60;
+            }}
+            .flower-list {{
+                list-style-type: none;
+                padding: 0;
+            }}
+            .flower-item {{
+                background: #f8f9fa;
+                margin: 10px 0;
+                padding: 15px;
+                border-radius: 5px;
+                border-left: 4px solid #3498db;
+            }}
+            .flower-id {{
+                font-weight: bold;
+                color: #2c3e50;
+            }}
+            .links {{
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+            }}
+            a {{
+                color: #3498db;
+                text-decoration: none;
+                margin-right: 15px;
+            }}
+            a:hover {{
+                text-decoration: underline;
+            }}
+            .danger {{
+                color: #e74c3c;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Список всех цветов</h1>
+            
+            <div class="stats">
+                <h2>Статистика</h2>
+                <p><strong>Общее количество цветов:</strong> {len(flower_list)}</p>
+            </div>
+            
+            <h2>Цветы:</h2>
+            <ul class="flower-list">
+                {"".join([f'<li class="flower-item"><span class="flower-id">#{i}:</span> {flower}</li>' for i, flower in enumerate(flower_list)])}
+            </ul>
+            
+            <div class="links">
+                <a href="/lab2/clear_flowers" class="danger">Очистить список цветов</a>
+                <a href="/lab2/">Назад к лабораторной 2</a>
+                <a href="/">На главную</a>
+            </div>
+        </div>
+    </body>
+</html>
+'''
+
+@app.route('/lab2/clear_flowers')
+def clear_flowers():
+    flower_list.clear()
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Список цветов очищен</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f9f9f9;
+            }}
+            .container {{
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                text-align: center;
+            }}
+            h1 {{
+                color: #e74c3c;
+            }}
+            .success {{
+                background: #fde8e8;
+                padding: 20px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border-left: 4px solid #e74c3c;
+            }}
+            a {{
+                color: #3498db;
+                text-decoration: none;
+                margin: 0 10px;
+            }}
+            a:hover {{
+                text-decoration: underline;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Список цветов очищен!</h1>
+            
+            <div class="success">
+                <p>Все цветы были успешно удалены из списка.</p>
+                <p>Текущее количество цветов: 0</p>
+            </div>
+            
+            <div>
+                <a href="/lab2/all_flowers">Посмотреть все цветы</a>
+                <a href="/lab2/">Назад к лабораторной 2</a>
+                <a href="/">На главную</a>
+            </div>
+        </div>
     </body>
 </html>
 '''
