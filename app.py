@@ -15,7 +15,7 @@ books = [
     {'author': 'Александр Пушкин', 'title': 'Евгений Онегин', 'genre': 'Роман в стихах', 'pages': 240},
     {'author': 'Николай Гоголь', 'title': 'Мёртвые души', 'genre': 'Поэма', 'pages': 352},
     {'author': 'Иван Тургенев', 'title': 'Отцы и дети', 'genre': 'Роман', 'pages': 288},
-    {'author': 'Александр Дюма', 'title': 'Граф Монте-Кристо', 'genre': 'Приключенческий роман', 'pages': 928},
+    {'author': 'Александр Дюма', 'title': 'Граф Монте-Кристо', 'genre': 'Приклюденческий роман', 'pages': 928},
     {'author': 'Джордж Оруэлл', 'title': '1984', 'genre': 'Антиутопия', 'pages': 328},
     {'author': 'Рэй Брэдбери', 'title': '451° по Фаренгейту', 'genre': 'Научная фантастика', 'pages': 256},
     {'author': 'Джоан Роулинг', 'title': 'Гарри Поттер и философский камень', 'genre': 'Фэнтези', 'pages': 432},
@@ -164,6 +164,16 @@ cats = [
         'origin': 'США',
         'weight': '4-7 кг'
     }
+]
+
+# Обновленный список цветов с ценами
+flower_list = [
+    {'name': 'роза', 'price': 300},
+    {'name': 'тюльпан', 'price': 310},
+    {'name': 'незабудка', 'price': 320},
+    {'name': 'ромашка', 'price': 330},
+    {'name': 'георгин', 'price': 300},
+    {'name': 'гладиолус', 'price': 310}
 ]
 
 @app.route("/")
@@ -500,253 +510,56 @@ def a():
 def a2():
     return 'со слэшем'
 
-flower_list = ['роза', 'тюльпан', 'незабудка', 'ромашка']
-
 @app.route('/lab2/flowers/<int:flower_id>')
 def flowers(flower_id):
     if flower_id >= len(flower_list):
         abort(404)
     else:
-        return f'''
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Цветок #{flower_id}</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .container {{
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            h1 {{
-                color: #2c3e50;
-                border-bottom: 2px solid #3498db;
-                padding-bottom: 10px;
-            }}
-            .flower-info {{
-                background: #e8f4fc;
-                padding: 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border-left: 4px solid #3498db;
-            }}
-            .links {{
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #ddd;
-            }}
-            a {{
-                color: #3498db;
-                text-decoration: none;
-                margin-right: 15px;
-            }}
-            a:hover {{
-                text-decoration: underline;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Информация о цветке</h1>
-            
-            <div class="flower-info">
-                <h2>Цветок #{flower_id}</h2>
-                <p><strong>Название:</strong> {flower_list[flower_id]}</p>
-                <p><strong>ID цветка:</strong> {flower_id}</p>
-                <p><strong>Всего цветов в списке:</strong> {len(flower_list)}</p>
-            </div>
-            
-            <div class="links">
-                <a href="/lab2/all_flowers">Посмотреть все цветы</a>
-                <a href="/lab2/">Назад к лабораторной 2</a>
-                <a href="/">На главную</a>
-            </div>
-        </div>
-    </body>
-</html>
-'''
+        flower = flower_list[flower_id]
+        return render_template('flower_detail.html', 
+                             flower_id=flower_id, 
+                             flower=flower,
+                             total_flowers=len(flower_list))
+
+# Новый обработчик для добавления цветка через форму
+@app.route('/lab2/add_flower', methods=['GET', 'POST'])
+def add_flower():
+    if request.method == 'POST':
+        flower_name = request.form.get('name')
+        if flower_name:
+            # Добавляем цветок с ценой по умолчанию 300 руб
+            flower_list.append({'name': flower_name, 'price': 300})
+        return redirect('/lab2/all_flowers')
+    else:
+        # Если GET-запрос, показываем форму
+        return render_template('add_flower.html')
 
 @app.route('/lab2/add_flower/<name>')
-def add_flower(name):
-    flower_list.append(name)
-    return f'''
-<!doctype html>
-<html>
-    <body>
-    <h1>Добавлен новый цветок</h1>
-    <p>Название нового цветка: {name} </p>
-    <p>Всего цветов: {len(flower_list)}</p>
-    <p>Полный список: {flower_list}</p>
-    </body>
-</html>
-'''
+def add_flower_by_url(name):
+    # Добавляем цветок с ценой по умолчанию 300 руб
+    flower_list.append({'name': name, 'price': 300})
+    return redirect('/lab2/all_flowers')
 
-@app.route('/lab2/add_flower/')
-def add_flower_empty():
-    return "вы не задали имя цветка", 400
+# Новый обработчик для удаления цветка по номеру
+@app.route('/lab2/del_flower/<int:flower_id>')
+def del_flower(flower_id):
+    if flower_id < 0 or flower_id >= len(flower_list):
+        abort(404)
+    
+    # Удаляем цветок из списка
+    flower_list.pop(flower_id)
+    
+    # Перенаправляем обратно на страницу всех цветов
+    return redirect('/lab2/all_flowers')
 
 @app.route('/lab2/all_flowers')
 def all_flowers():
-    return f'''
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Все цветы</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .container {{
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            h1 {{
-                color: #2c3e50;
-                border-bottom: 2px solid #27ae60;
-                padding-bottom: 10px;
-            }}
-            .stats {{
-                background: #d5f4e6;
-                padding: 15px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border-left: 4px solid #27ae60;
-            }}
-            .flower-list {{
-                list-style-type: none;
-                padding: 0;
-            }}
-            .flower-item {{
-                background: #f8f9fa;
-                margin: 10px 0;
-                padding: 15px;
-                border-radius: 5px;
-                border-left: 4px solid #3498db;
-            }}
-            .flower-id {{
-                font-weight: bold;
-                color: #2c3e50;
-            }}
-            .links {{
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #ddd;
-            }}
-            a {{
-                color: #3498db;
-                text-decoration: none;
-                margin-right: 15px;
-            }}
-            a:hover {{
-                text-decoration: underline;
-            }}
-            .danger {{
-                color: #e74c3c;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Список всех цветов</h1>
-            
-            <div class="stats">
-                <h2>Статистика</h2>
-                <p><strong>Общее количество цветов:</strong> {len(flower_list)}</p>
-            </div>
-            
-            <h2>Цветы:</h2>
-            <ul class="flower-list">
-                {"".join([f'<li class="flower-item"><span class="flower-id">#{i}:</span> {flower}</li>' for i, flower in enumerate(flower_list)])}
-            </ul>
-            
-            <div class="links">
-                <a href="/lab2/clear_flowers" class="danger">Очистить список цветов</a>
-                <a href="/lab2/">Назад к лабораторной 2</a>
-                <a href="/">На главную</a>
-            </div>
-        </div>
-    </body>
-</html>
-'''
+    return render_template('all_flowers.html', flowers=flower_list)
 
 @app.route('/lab2/clear_flowers')
 def clear_flowers():
     flower_list.clear()
-    return '''
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Список цветов очищен</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .container {{
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                text-align: center;
-            }}
-            h1 {{
-                color: #e74c3c;
-            }}
-            .success {{
-                background: #fde8e8;
-                padding: 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border-left: 4px solid #e74c3c;
-            }}
-            a {{
-                color: #3498db;
-                text-decoration: none;
-                margin: 0 10px;
-            }}
-            a:hover {{
-                text-decoration: underline;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Список цветов очищен!</h1>
-            
-            <div class="success">
-                <p>Все цветы были успешно удалены из списка.</p>
-                <p>Текущее количество цветов: 0</p>
-            </div>
-            
-            <div>
-                <a href="/lab2/all_flowers">Посмотреть все цветы</a>
-                <a href="/lab2/">Назад к лабораторной 2</a>
-                <a href="/">На главную</a>
-            </div>
-        </div>
-    </body>
-</html>
-'''
+    return redirect('/lab2/all_flowers')
 
 @app.route('/lab2/example')
 def example():
