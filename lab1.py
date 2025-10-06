@@ -2,7 +2,7 @@ from flask import Blueprint, url_for, request, redirect
 import datetime
 lab1 = Blueprint('lab1', __name__)
 
-
+error_log = []
 @lab1.route("/index")
 def index():
     return '''
@@ -167,27 +167,36 @@ def lab():
 </html>
 '''
 
-
 @lab1.route("/error/400")
 def error400():
     return "<h1>400 - Bad Request (Некорректный запрос)</h1>", 400
+
 
 @lab1.route("/error/401")
 def error401():
     return "<h1>401 - Unauthorized (Требуется авторизация)</h1>", 401
 
+
 @lab1.route("/error/402")
 def error402():
     return "<h1>402 - Payment Required (Требуется оплата)</h1>", 402
+
 
 @lab1.route("/error/403")
 def error403():
     return "<h1>403 - Forbidden (Доступ запрещен)</h1>", 403
 
+
 @lab1.route("/error/405")
 def error405():
     return "<h1>405 - Method Not Allowed (Метод не разрещен)</h1>", 405
 
+
 @lab1.route("/error/418")
 def error418():
     return "<h1>418 - I'm a teapot (Я чайник)</h1>", 418
+
+
+@lab1.route("/cause_error")
+def cause_error():
+    return 1/0
