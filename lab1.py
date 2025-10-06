@@ -195,6 +195,21 @@ def error405():
 @lab1.route("/error/418")
 def error418():
     return "<h1>418 - I'm a teapot (Я чайник)</h1>", 418
+def generate_log_html():
+    """Генерирует HTML для отображения лога ошибок"""
+    if not error_log:
+        return "<p>Лог пуст</p>"
+    
+    log_html = ""
+    for entry in reversed(error_log):  # Показываем последние записи первыми
+        log_html += f'''
+        <div class="log-entry">
+            <strong>IP:</strong> {entry['ip']} | 
+            <strong>Дата:</strong> {entry['date']} | 
+            <strong>URL:</strong> {entry['url']}
+        </div>
+        '''
+    return log_html
 
 
 @lab1.route("/cause_error")

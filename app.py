@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, url_for, request, redirect, abort, render_template
 from lab1 import lab1
 from lab2 import lab2
 import datetime
@@ -6,9 +6,37 @@ import datetime
 app = Flask(__name__)
 app.register_blueprint(lab1)
 app.register_blueprint(lab2)
+
+# Глобальная переменная для хранения лога 404 ошибок
 error_log = []
 
+
 @app.route("/")
+@app.route("/index")
+def index():
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>НГТУ, ФБ, Лабораторные работы</title>
+    </head>
+    <body>
+        <h1>НГТУ, ФБ, WEB-программирование, часть 2.<br> Список лабораторных</h1>
+        <ul>
+            <li><a href="/lab1">Первая лабораторная</a></li>
+            <li><a href="/lab2">Вторая лабораторная</a></li>
+        </ul>
+        <footer>
+            <p>Нейверт Арина Сергеевна</p>
+            <p>Группа: ФБИ-33</p>
+            <p>Курс: 3</p>
+            <p>2025 год</p>
+        </footer>
+    </body>
+</html>
+'''
+
 
 
 @app.errorhandler(404)
@@ -27,6 +55,7 @@ def generate_log_html():
         </div>
         '''
     return log_html
+
 def not_found(err):
     # Получаем информацию о запросе
     client_ip = request.remote_addr
@@ -150,5 +179,3 @@ def internal_error(err):
     </body>
 </html>
 ''', 500
-
-
