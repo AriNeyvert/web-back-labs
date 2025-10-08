@@ -1,11 +1,13 @@
 from flask import Flask, url_for, request, redirect, abort, render_template
 from lab1 import lab1
 from lab2 import lab2
+from lab3 import lab3
 import datetime
 
 app = Flask(__name__)
 app.register_blueprint(lab1)
 app.register_blueprint(lab2)
+app.register_blueprint(lab3)
 
 # Глобальная переменная для хранения лога 404 ошибок
 error_log = []
@@ -26,6 +28,7 @@ def index():
         <ul>
             <li><a href="/lab1">Первая лабораторная</a></li>
             <li><a href="/lab2">Вторая лабораторная</a></li>
+            <li><a href="/lab3">Третья лабораторная</a></li>
         </ul>
         <footer>
             <p>Нейверт Арина Сергеевна</p>
