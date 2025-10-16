@@ -2,7 +2,33 @@
 
 {% block lab %}Лабораторная работа 3{% endblock %}
 
+
 {% block main %}
+
+
+<style>
+    .error {
+        color: #d32f2f;
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 4px;
+        padding: 4px 8px;
+        background-color: #ffebee;
+        border: 1px solid #ffcdd2;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    form div {
+        margin-bottom: 15px;
+    }
+    
+    input:invalid {
+        border-color: #d32f2f;
+    }
+    </style>
+
+
     <h1>Формы, cookie</h1>
     <div>
         Привет, <span style="color: {{name_color}}">{{ name }}</span>!
