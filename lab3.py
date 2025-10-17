@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, make_response, redirect
+from datetime import datetime
 lab3 = Blueprint('lab3', __name__)
 
 
@@ -40,3 +41,36 @@ def form1():
 
     sex = request.args.get('sex')
     return render_template('lab3/form1.html', user=user, age=age, sex=sex, errors=errors)
+
+@lab3.route('/lab3/order')
+def order():
+    return render_template('/lab3/order.html')
+
+@lab3.route('/lab3/pay')
+def pay():
+    price=0
+    drink = request.args.get('drink')
+    # Пусть кофе стоит 120 рублей, черный чай - 80 рублей, зеленый - 70 рублей
+    if drink == 'cofee':
+        price = 120
+    elif drink == 'black-tea':
+        price = 80
+    else:
+        price = 70
+
+    # Добавка молока удорожает напиток на 30 рублей, а сахара - на 10
+    if request.args.get('milk') == 'on':
+        price +=30
+    if request.args.get('sugar') == 'on':
+        price +=10
+
+    return render_template('lab3/pay.html', price=price)
+
+@lab3.route('/lab3/success', methods=['POST'])
+def success():
+    price = request.form.get('price', 0)
+    return render_template('lab3/success.html', 
+                         price=price,
+                         drink_name=request.form.get('drink_name', ''),
+                         additions=request.form.get('additions', '').split(',') if request.form.get('additions') else [],
+                         order_time=datetime.now().strftime("%H:%M %d.%m.%Y"))

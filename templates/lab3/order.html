@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 3{% endblock %}
+
+{% block main %}
+    <div class="order-container">
+        <h1>Заказ напитка</h1>
+        
+        <form action="/lab3/pay" method="GET" class="order-form">
+            <div class="form-section">
+                <h2>Выберите напиток:</h2>
+                <div class="drink-options">
+                    <label class="option-card">
+                        <input type="radio" value="coffee" name="drink" checked>
+                        <div class="option-content">
+                            <span class="drink-name">Кофе</span>
+                            <span class="price">120 ₽</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" value="black-tea" name="drink">
+                        <div class="option-content">
+                            <span class="drink-name">Черный чай</span>
+                            <span class="price">80 ₽</span>
+                        </div>
+                    </label>
+                    <label class="option-card">
+                        <input type="radio" value="green-tea" name="drink">
+                        <div class="option-content">
+                            <span class="drink-name">Зеленый чай</span>
+                            <span class="price">70 ₽</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Добавки:</h2>
+                <div class="additions-options">
+                    <label class="addition-option">
+                        <input type="checkbox" name="milk">
+                        <span class="checkmark"></span>
+                        <span class="addition-name">Молоко</span>
+                        <span class="addition-price">+30 ₽</span>
+                    </label>
+                    <label class="addition-option">
+                        <input type="checkbox" name="sugar">
+                        <span class="checkmark"></span>
+                        <span class="addition-name">Сахар</span>
+                        <span class="addition-price">+10 ₽</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="price-preview">
+                <strong>Итого: <span id="total-price">120</span> ₽</strong>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-order">Перейти к оплате</button>
+            </div>
+        </form>
+    </div>
+
+    <style>
+        .order-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .order-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .drink-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-card {
+            display: block;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-card:hover {
+            border-color: #007bff;
+        }
+
+        .option-card input[type="radio"] {
+            display: none;
+        }
+
+        .option-card input[type="radio"]:checked + .option-content {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .option-card input[type="radio"]:checked {
+            border-color: #007bff;
+            background: #007bff;
+        }
+
+        .option-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drink-name {
+            font-size: 1.1em;
+        }
+
+        .price {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .additions-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .addition-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .addition-option:hover {
+            background: #f8f9fa;
+        }
+
+        .addition-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .addition-option input[type="checkbox"]:checked + .checkmark {
+            background: #007bff;
+            border-color: #007bff;
+        }
+
+        .checkmark:after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            display: none;
+        }
+
+        .addition-option input[type="checkbox"]:checked + .checkmark:after {
+            display: block;
+        }
+
+        .addition-name {
+            flex: 1;
+        }
+
+        .addition-price {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .price-preview {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+
+        .btn-order {
+            width: 100%;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-order:hover {
+            background: #218838;
+        }
+    </style>
+
+    <script>
+        function updateTotalPrice() {
+            let total = 0;
+            
+            // Напиток
+            const drink = document.querySelector('input[name="drink"]:checked');
+            if (drink) {
+                if (drink.value === 'coffee') total += 120;
+                else if (drink.value === 'black-tea') total += 80;
+                else if (drink.value === 'green-tea') total += 70;
+            }
+            
+            // Добавки
+            if (document.querySelector('input[name="milk"]:checked')) total += 30;
+            if (document.querySelector('input[name="sugar"]:checked')) total += 10;
+            
+            document.getElementById('total-price').textContent = total;
+        }
+        
+        // Слушатели изменений
+        document.querySelectorAll('input[name="drink"]').forEach(radio => {
+            radio.addEventListener('change', updateTotalPrice);
+        });
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateTotalPrice);
+        });
+        
+        // Инициализация
+        updateTotalPrice();
+    </script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 3{% endblock %}
+
+{% block main %}
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h1>Спасибо за ваш заказ!</h1>
+        <div class="success-message">
+            <p>Ваш заказ оплачен на сумму <strong>{{ price }} рублей</strong></p>
+            <p>Ожидайте доставку</p>
+        </div>
+        <div class="order-details">
+            <h3>Детали заказа:</h3>
+            <p><strong>Напиток:</strong> {{ drink_name }}</p>
+            {% if additions %}
+            <p><strong>Добавки:</strong> {{ additions|join(', ') }}</p>
+            {% endif %}
+            <p><strong>Время заказа:</strong> {{ order_time }}</p>
+        </div>
+        <a href="/lab3/order" class="btn btn-primary">Сделать новый заказ</a>
+    </div>
+
+    <style>
+        .success-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            font-size: 40px;
+            line-height: 80px;
+            margin: 0 auto 20px;
+        }
+
+        .success-message {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success-message p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .order-details {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .order-details h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+{% endblock %}
