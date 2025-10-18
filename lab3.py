@@ -117,3 +117,105 @@ def settings():
         fontstyle=fontstyle
     ))
     return resp
+
+
+@lab3.route('/lab3/ticket')
+def ticket_form():
+    return render_template('lab3/ticket_form.html')
+
+
+@lab3.route('/lab3/ticket_result')
+def ticket_result():
+    # Получаем данные из формы
+    fio = request.args.get('fio')
+    shelf = request.args.get('shelf')
+    linen = request.args.get('linen')
+    baggage = request.args.get('baggage')
+    age_str = request.args.get('age')
+    departure = request.args.get('departure')
+    destination = request.args.get('destination')
+    date = request.args.get('date')
+    insurance = request.args.get('insurance')
+
+    errors = {}
+    
+    # Проверка на пустые поля
+    if not fio:
+        errors['fio'] = 'Заполните поле ФИО пассажира'
+    if not shelf:
+        errors['shelf'] = 'Выберите полку'
+    if not age_str:
+        errors['age'] = 'Заполните поле возраста'
+    if not departure:
+        errors['departure'] = 'Заполните пункт выезда'
+    if not destination:
+        errors['destination'] = 'Заполните пункт назначения'
+    if not date:
+        errors['date'] = 'Заполните дату поездки'
+
+    # Проверка возраста
+    if age_str:
+        try:
+            age = int(age_str)
+            if age < 1 or age > 120:
+                errors['age'] = 'Возраст должен быть от 1 до 120 лет'
+        except ValueError:
+            errors['age'] = 'Возраст должен быть числом'
+
+    # Если есть ошибки, показываем форму снова
+    if errors:
+        return render_template('lab3/ticket_form.html', errors=errors,
+                             fio=fio, shelf=shelf, linen=linen, baggage=baggage,
+                             age=age_str, departure=departure, destination=destination,
+                             date=date, insurance=insurance)
+
+    age = int(age_str)
+    
+    # Расчет стоимости билета
+    if age < 18:
+        base_price = 700  # детский билет
+        ticket_type = "Детский билет"
+    else:
+        base_price = 1000  # взрослый билет
+        ticket_type = "Взрослый билет"
+
+    total_price = base_price
+
+    # Доплаты
+    if shelf in ['lower', 'lower-side']:
+        total_price += 100  # за нижнюю полку
+    
+    if linen == 'on':
+        total_price += 75  # за бельё
+    
+    if baggage == 'on':
+        total_price += 250  # за багаж
+    
+    if insurance == 'on':
+        total_price += 150  # за страховку
+
+    # Преобразуем значения для отображения
+    linen_display = "Да" if linen == 'on' else "Нет"
+    baggage_display = "Да" if baggage == 'on' else "Нет"
+    insurance_display = "Да" if insurance == 'on' else "Нет"
+
+    # Отображаем тип полки
+    shelf_display = {
+        'lower': 'Нижняя',
+        'upper': 'Верхняя', 
+        'upper-side': 'Верхняя боковая',
+        'lower-side': 'Нижняя боковая'
+    }.get(shelf, shelf)
+
+    return render_template('lab3/ticket_result.html',
+                         fio=fio,
+                         shelf=shelf_display,
+                         linen=linen_display,
+                         baggage=baggage_display,
+                         age=age,
+                         departure=departure,
+                         destination=destination,
+                         date=date,
+                         insurance=insurance_display,
+                         ticket_type=ticket_type,
+                         total_price=total_price)
