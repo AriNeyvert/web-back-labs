@@ -62,8 +62,8 @@ def author():
 
 @lab1.route("/lab1/image")
 def image():
-    path = url_for("static", filename="oak.jpg")
-    css = url_for ("static", filename="lab1.css")
+    path = url_for("static", filename="lab1/oak.jpg")
+    css = url_for("static", filename="lab1/lab1.css")
     return f'''
 <!doctype html>
 <html>
@@ -78,8 +78,8 @@ def image():
     </body>
 </html> ''', 200, {
     'Content-Language': "ru",
-    'Number_lab' : "LABA_1",
-    'Student' : "Neyvert Arina"
+    'Number_lab': "LABA_1",
+    'Student': "Neyvert Arina"
 }
 
 
