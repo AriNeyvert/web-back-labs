@@ -119,6 +119,18 @@ def settings():
     return resp
 
 
+@lab3.route('/lab3/del_settings_cookies')
+def del_settings_cookies():
+    """Очистка всех кук, установленных в настройках"""
+    resp = make_response(redirect('/lab3/settings'))
+    # Удаляем все куки, связанные с настройками
+    resp.delete_cookie('color')
+    resp.delete_cookie('bgcolor')
+    resp.delete_cookie('fontsize')
+    resp.delete_cookie('fontstyle')
+    return resp
+
+
 @lab3.route('/lab3/ticket')
 def ticket_form():
     return render_template('lab3/ticket_form.html')
