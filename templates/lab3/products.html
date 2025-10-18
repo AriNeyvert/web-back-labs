@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Каталог товаров</title>
+    <style>
+        .products-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .filter-form {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .filter-form input {
+            padding: 8px;
+            margin: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 150px;
+        }
+        .filter-form button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-btn {
+            background: #007bff;
+            color: white;
+        }
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+        }
+        .reset-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .product-brand {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .product-price {
+            color: #e44d26;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        .product-details {
+            font-size: 0.9em;
+            color: #777;
+        }
+        .results-info {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .no-products {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .price-range-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="products-container">
+        <h1>Каталог смартфонов</h1>
+        
+        <div class="filter-form">
+            <form method="get" action="/lab3/products">
+                <label>Минимальная цена:</label>
+                <input type="number" name="min_price" value="{{ min_price or '' }}" 
+                       placeholder="{{ min_price_all }}" min="0" step="100">
+                
+                <label>Максимальная цена:</label>
+                <input type="number" name="max_price" value="{{ max_price or '' }}" 
+                       placeholder="{{ max_price_all }}" min="0" step="100">
+                
+                <button type="submit" class="search-btn">Искать</button>
+            </form>
+            
+            <div style="margin-top: 15px;">
+                <a href="/lab3/products_reset" class="reset-link">Сброс</a>
+            </div>
+            
+            <div class="price-range-info">
+                Диапазон цен в каталоге: от <strong>{{ min_price_all }} руб.</strong> до <strong>{{ max_price_all }} руб.</strong>
+            </div>
+        </div>
+
+        <div class="results-info">
+            {% if min_price or max_price %}
+                {% if products_count == 0 %}
+                    <p style="color: #d00;">Не найдено ни одного товара в указанном диапазоне цен</p>
+                {% else %}
+                    <p>Найдено товаров: <strong>{{ products_count }}</strong> из {{ all_products_count }}</p>
+                {% endif %}
+            {% else %}
+                <p>Всего товаров в каталоге: <strong>{{ all_products_count }}</strong></p>
+            {% endif %}
+        </div>
+
+        {% if products_count > 0 %}
+            <div class="products-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-brand">{{ product.brand }}</div>
+                        <div class="product-price">{{ "{:,}".format(product.price).replace(",", " ") }} руб.</div>
+                        <div class="product-details">
+                            <div>Цвет: {{ product.color }}</div>
+                            <div>Память: {{ product.storage }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elif min_price or max_price %}
+            <div class="no-products">
+                <p>😔 Не найдено ни одного товара в указанном диапазоне цен</p>
+                <p>Попробуйте изменить параметры поиска или <a href="/lab3/products_reset">показать все товары</a></p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
