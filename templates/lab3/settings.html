@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 3{% endblock %}
+
+{% block main %}
+<h1>Cookies</h1>
+
+<form>
+    <div>
+        <label class="label" for="color" style="color: {{ color or '' }}">Выберите цвет текста:</label>
+        <input type="color" id="color" name="color" value="{{ color or '' }}">
+    </div>
+
+    <div>
+        <label class="label" for="bgcolor">Выберите цвет фона:</label>
+        <input type="color" id="bgcolor" name="bgcolor" value="{{ bgcolor or '' }}">
+    </div>
+
+    <div>
+        <label class="label" for="fontsize">Размер шрифта (px):</label>
+        <input type="number" id="fontsize" name="fontsize" min="8" max="72" value="{{ fontsize or 16 }}">
+    </div>
+
+    <div>
+        <label class="label" for="fontstyle">Стиль шрифта:</label>
+        <select id="fontstyle" name="fontstyle">
+            <option value="normal" {% if fontstyle == 'normal' %}selected{% endif %}>Обычный</option>
+            <option value="bold" {% if fontstyle == 'bold' %}selected{% endif %}>Жирный</option>
+            <option value="italic" {% if fontstyle == 'italic' %}selected{% endif %}>Курсив</option>
+            <option value="underline" {% if fontstyle == 'underline' %}selected{% endif %}>Подчёркнутый</option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">OK</button>
+    </div>
+</form>
+
+<style>
+    body {
+        background-color: {{ bgcolor or 'white' }};
+        color: {{ color or 'black' }};
+        font-size: {{ fontsize or 16 }}px;
+        {% if fontstyle == 'bold' %}
+        font-weight: bold;
+        {% elif fontstyle == 'italic' %}
+        font-style: italic;
+        {% elif fontstyle == 'underline' %}
+        text-decoration: underline;
+        {% endif %}
+    }
+</style>
+{% endblock %}

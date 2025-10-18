@@ -74,3 +74,38 @@ def success():
                          drink_name=request.form.get('drink_name', ''),
                          additions=request.form.get('additions', '').split(',') if request.form.get('additions') else [],
                          order_time=datetime.now().strftime("%H:%M %d.%m.%Y"))
+
+@lab3.route('/lab3/settings')
+def settings():
+    color = request.args.get('color')
+    bgcolor = request.args.get('bgcolor')
+    fontsize = request.args.get('fontsize')
+    fontstyle = request.args.get('fontstyle')
+
+    # если пришли параметры — сохраняем их в cookies
+    if color or bgcolor or fontsize or fontstyle:
+        resp = make_response(redirect('/lab3/settings'))
+        if color:
+            resp.set_cookie('color', color)
+        if bgcolor:
+            resp.set_cookie('bgcolor', bgcolor)
+        if fontsize:
+            resp.set_cookie('fontsize', fontsize)
+        if fontstyle:
+            resp.set_cookie('fontstyle', fontstyle)
+        return resp
+
+    # если параметров нет — берём из cookies
+    color = request.cookies.get('color')
+    bgcolor = request.cookies.get('bgcolor')
+    fontsize = request.cookies.get('fontsize')
+    fontstyle = request.cookies.get('fontstyle')
+
+    resp = make_response(render_template(
+        'lab3/settings.html',
+        color=color,
+        bgcolor=bgcolor,
+        fontsize=fontsize,
+        fontstyle=fontstyle
+    ))
+    return resp
