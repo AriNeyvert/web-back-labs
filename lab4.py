@@ -96,3 +96,19 @@ def power():
     
     result = x1 ** x2
     return render_template('lab4/pow.html', x1=x1, x2=x2, result=result)
+
+three_count = 0
+@lab4.route('/lab4/three', methods = ['GET', 'POST'])
+def three():
+    global three_count
+    if request.method == 'GET':
+        return render_template('lab4/three.html', three_count=three_count)
+    
+    operation = request.form.get('operation')
+
+    if operation == 'cut':
+        three_count -= 1
+    elif operation == 'plant':
+        three_count += 1
+
+    return render_template('lab4/three.html', three_count = three_count)
