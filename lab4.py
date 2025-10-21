@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect
 lab4 = Blueprint('lab4', __name__)
 
 @lab4.route('/lab4/')
@@ -111,4 +111,4 @@ def three():
     elif operation == 'plant':
         three_count += 1
 
-    return render_template('lab4/three.html', three_count = three_count)
+    return redirect('/lab4/three')
