@@ -114,5 +114,20 @@ def three():
         # Максимальное количество деревьев - 10
         if three_count < 10:
             three_count += 1
-            
+
     return redirect('/lab4/three')
+
+
+@lab4.route('/lab4/login', methods = ['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('lab4/login.html', authorized=False)
+    
+    login = request.form.get('login')
+    password = request.form.get('password')
+
+    if login == 'arina' and password == '123':
+        return render_template('/lab4/login.html', login=login, authorized=True)
+    
+    error = 'Неверные логин и/или пароль'
+    return render_template('lab4/login.html', error=error, authorized=False)
