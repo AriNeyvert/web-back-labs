@@ -107,8 +107,12 @@ def three():
     operation = request.form.get('operation')
 
     if operation == 'cut':
-        three_count -= 1
+        # Проверка, чтобы счетчик не ушел в отрицательную область
+        if three_count > 0:
+            three_count -= 1
     elif operation == 'plant':
-        three_count += 1
-
+        # Максимальное количество деревьев - 10
+        if three_count < 10:
+            three_count += 1
+            
     return redirect('/lab4/three')
