@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 4{% endblock %}
+
+{% block main %}
+    <h1>Заказ зерна</h1>
+    
+    <form method="post">
+        <div>
+            <label for="grain_type">Выберите тип зерна:</label>
+            <select id="grain_type" name="grain_type">
+                <option value="">-- Выберите зерно --</option>
+                <option value="barley" {{ 'selected' if request.form.get('grain_type') == 'barley' else '' }}>Ячмень - 12 000 руб/т</option>
+                <option value="oats" {{ 'selected' if request.form.get('grain_type') == 'oats' else '' }}>Овёс - 8 500 руб/т</option>
+                <option value="wheat" {{ 'selected' if request.form.get('grain_type') == 'wheat' else '' }}>Пшеница - 9 000 руб/т</option>
+                <option value="rye" {{ 'selected' if request.form.get('grain_type') == 'rye' else '' }}>Рожь - 15 000 руб/т</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="weight">Вес (тонны):</label>
+            <input type="number" id="weight" name="weight" 
+                   step="0.1" min="0.1"
+                   value="{{ request.form.get('weight', '') }}"
+                   placeholder="Введите вес">
+        </div>
+        
+        <div>
+            <button type="submit">Оформить заказ</button>
+        </div>
+    </form>
+
+    {% if error %}
+        <div style="color: red; font-weight: bold; margin: 20px 0;">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div style="color: green; font-weight: bold; margin: 20px 0;">
+            <p>Заказ успешно сформирован. Вы заказали {{ grain_name }}.</p>
+            <p>Вес: {{ weight }} т.</p>
+            <p>Сумма к оплате: {{ "%.2f"|format(total_cost) }} руб.</p>
+            
+            {% if discount_applied %}
+                <div style="color: blue; margin-top: 10px;">
+                    <p>Применена скидка 10% за большой объём.</p>
+                    <p>Размер скидки: {{ "%.2f"|format(discount) }} руб.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        <h3>Цены на зерно:</h3>
+        <ul>
+            <li>Ячмень: 12 000 руб/т</li>
+            <li>Овёс: 8 500 руб/т</li>
+            <li>Пшеница: 9 000 руб/т</li>
+            <li>Рожь: 15 000 руб/т</li>
+        </ul>
+        <p><strong>Скидки:</strong> При заказе более 10 тонн - скидка 10%</p>
+    </div>
+{% endblock %}
