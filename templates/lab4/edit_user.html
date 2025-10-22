@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 4{% endblock %}
+
+{% block main %}
+    <h1>Редактирование профиля</h1>
+    
+    <form method="post">
+        <div>
+            <label for="login">Логин:</label>
+            <input type="text" id="login" name="login" 
+                   value="{{ user.login if user else '' }}"
+                   placeholder="Введите логин">
+        </div>
+        
+        <div>
+            <label for="name">Имя:</label>
+            <input type="text" id="name" name="name" 
+                   value="{{ user.name if user else '' }}"
+                   placeholder="Введите ваше имя">
+        </div>
+        
+        <div>
+            <label for="gender">Пол:</label>
+            <select id="gender" name="gender">
+                <option value="мужской" {{ 'selected' if user.gender == 'мужской' else '' }}>Мужской</option>
+                <option value="женский" {{ 'selected' if user.gender == 'женский' else '' }}>Женский</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="password">Новый пароль:</label>
+            <input type="password" id="password" name="password" 
+                   placeholder="Оставьте пустым, если не хотите менять">
+            <small>Оставьте пустым, чтобы сохранить текущий пароль</small>
+        </div>
+        
+        <div>
+            <label for="password_confirm">Подтверждение нового пароля:</label>
+            <input type="password" id="password_confirm" name="password_confirm" 
+                   placeholder="Повторите новый пароль">
+        </div>
+        
+        <div>
+            <button type="submit">Сохранить изменения</button>
+            <button type="reset">Сбросить</button>
+            <a href="/lab4/users">
+                <button type="button">Отмена</button>
+            </a>
+        </div>
+    </form>
+
+    {% if error %}
+        <div style="color: red; font-weight: bold; margin: 20px 0;">
+            {{ error }}
+        </div>
+    {% endif %}
+{% endblock %}

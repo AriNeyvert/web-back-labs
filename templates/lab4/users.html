@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 4{% endblock %}
+
+{% block main %}
+    <h1>Список пользователей</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="/lab4/register">
+            <button>Добавить нового пользователя</button>
+        </a>
+    </div>
+
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th>Логин</th>
+                <th>Имя</th>
+                <th>Пол</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.login }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.gender }}</td>
+                <td>
+                    {% if user.login == current_user %}
+                    <div style="display: flex; gap: 10px;">
+                        <form action="/lab4/edit_user" method="get" style="display: inline;">
+                            <button type="submit">Редактировать</button>
+                        </form>
+                        <form action="/lab4/delete_user" method="post" style="display: inline;">
+                            <button type="submit" 
+                                    onclick="return confirm('Вы уверены, что хотите удалить свой аккаунт?')"
+                                    style="background-color: #ff4444; color: white;">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <span style="color: #888;">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+        <a href="/lab4/login">Назад к авторизации</a>
+    </div>
+{% endblock %}
