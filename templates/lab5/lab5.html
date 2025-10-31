@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-программирование, часть 2. Лабораторная работа 5</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .header h1 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .header h2 {
+            color: #64748b;
+            font-weight: normal;
+        }
+        .nav-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .username {
+            color: #475569;
+            font-weight: 500;
+        }
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .nav-card { flex-direction: column; align-items: stretch; }
+            .nav-links { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>WEB-программирование, часть 2</h1>
+        <h2>Лабораторная работа 5 - База знаний</h2>
+    </div>
+
+    <div class="nav-card">
+        <div class="nav-links">
+            <a href="{{ url_for('lab5.list_articles') }}">Список статей</a>
+            <a href="{{ url_for('lab5.create_article') }}">Создать статью</a>
+            <a href="{{ url_for('lab5.login') }}">Войти</a>
+            <a href="{{ url_for('lab5.register') }}">Регистрация</a>
+        </div>
+        <div class="username">{{ username }}</div>
+    </div>
+
+    <div class="content">
+        <h3>Добро пожаловать!</h3>
+        <p>Выберите действие из меню выше для работы с базой знаний.</p>
+    </div>
+</body>
+</html>
