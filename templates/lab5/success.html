@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация успешна</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .success-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .congratulations {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        .login-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .link-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .link-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <h1>🎉 Поздравляем!</h1>
+        
+        <div class="congratulations">
+            <p>Дорогой пользователь <span class="login-name">{{ login }}</span>,</p>
+            <p>Вы успешно зарегистрировались в нашей системе!</p>
+            <p>Теперь вы можете воспользоваться всеми возможностями нашей базы знаний.</p>
+        </div>
+
+        <a href="{{ url_for('lab5.index') }}" class="link-button">
+            Перейти к базе знаний
+        </a>
+    </div>
+</body>
+</html>
