@@ -108,8 +108,7 @@ def register_user():
                                error="Такой пользователь уже существует")
     
     password_hash = generate_password_hash(password)
-    cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", 
-                (login, password_hash))
+    cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
     
     db_close(conn, cur)
     return render_template('lab5/success.html', login=login)
