@@ -1,10 +1,10 @@
-from flask import Flask, Blueprint, render_template, request, session
+from flask import Flask, Blueprint, render_template, request, session, redirect, url_for
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Добавьте секретный ключ для сессий
+app.secret_key = 'your-secret-key-here'
 
 # Создаем Blueprint для lab5
 lab5 = Blueprint('lab5', __name__, template_folder='templates', static_folder='static')
@@ -14,10 +14,9 @@ def index():
     return render_template('lab5/lab5.html', login=session.get('login'))
 
 def db_connect():
-    # Используем правильное имя базы данных
     conn = psycopg2.connect(
         host='127.0.0.1',
-        database='arina_neyvert_knowledge_base',  # Исправлено с 'kb' на правильное имя
+        database='arina_neyvert_knowledge_base',
         user='arina_neyvert_knowledge_base',
         password='1967'
     )
@@ -33,9 +32,40 @@ def db_close(conn, cur):
 def list_articles():
     return "Список статей"
 
-@lab5.route('/lab5/create')
-def create_article():
-    return "Создать статью"
+# ИСПРАВЛЕНИЕ: Удаляем дублирующий маршрут и переименовываем функцию
+@lab5.route('/lab5/create', methods=['GET', 'POST'])
+def create_article():  # Изменяем имя функции с create на create_article
+    login = session.get('login')
+    if not login:
+        return redirect('/lab5/login')
+    
+    if request.method == 'GET':
+        return render_template('lab5/create_article.html')
+    
+    title = request.form.get('title')
+    article_text = request.form.get('article_text')
+
+    if not (title and article_text):
+        return render_template('lab5/create_article.html', error='Заполните все поля')
+
+    conn, cur = db_connect()
+
+    # Получаем id пользователя
+    cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
+    user = cur.fetchone()
+    
+    if not user:
+        db_close(conn, cur)
+        return render_template('lab5/create_article.html', error='Пользователь не найден')
+    
+    user_id = user['id']
+
+    # Используем параметризованные запросы
+    cur.execute("INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
+                (user_id, title, article_text))
+    
+    db_close(conn, cur)
+    return redirect('/lab5/')
 
 @lab5.route('/lab5/register', methods=['GET', 'POST'])
 def register_user():
@@ -48,10 +78,8 @@ def register_user():
     if not (login and password):
         return render_template('lab5/register.html', error='Заполните все поля')
     
-    # Используем функцию db_connect вместо прямого подключения
     conn, cur = db_connect()
 
-    # Используем параметризованные запросы для безопасности
     cur.execute("SELECT login FROM users WHERE login = %s;", (login,))
     if cur.fetchone():
         db_close(conn, cur)
@@ -59,7 +87,6 @@ def register_user():
                                error="Такой пользователь уже существует")
     
     password_hash = generate_password_hash(password)
-    # Используем параметризованные запросы
     cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", 
                 (login, password_hash))
     
@@ -77,10 +104,8 @@ def login():
     if not (login and password):
         return render_template('lab5/login.html', error="Заполните все поля")
     
-    # Используем функцию db_connect вместо прямого подключения
     conn, cur = db_connect()
 
-    # Используем параметризованные запросы
     cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
     user = cur.fetchone()
 
@@ -97,3 +122,20 @@ def login():
     session['login'] = login
     db_close(conn, cur)
     return render_template('lab5/success_login.html', login=login)
+
+# Добавляем обработчик для выхода
+@lab5.route('/lab5/logout')
+def logout():
+    session.pop('login', None)
+    return redirect('/lab5/')
+
+# Обработчик для favicon.ico
+@lab5.route('/favicon.ico')
+def favicon():
+    return '', 404
+
+# Регистрируем blueprint
+app.register_blueprint(lab5)
+
+if __name__ == '__main__':
+    app.run(debug=True)
