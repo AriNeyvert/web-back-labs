@@ -28,13 +28,34 @@ def db_close(conn, cur):
     cur.close()
     conn.close()
 
+# ИСПРАВЛЕНИЕ: Объединяем оба маршрута /lab5/list в один
 @lab5.route('/lab5/list')
 def list_articles():
-    return "Список статей"
+    login = session.get('login')
+    if not login:
+        return redirect('/lab5/login')
+    
+    conn, cur = db_connect()
 
-# ИСПРАВЛЕНИЕ: Удаляем дублирующий маршрут и переименовываем функцию
+    # ИСПРАВЛЕНИЕ: Используем параметризованные запросы вместо f-строк
+    cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
+    user = cur.fetchone()
+    
+    if not user:
+        db_close(conn, cur)
+        return redirect('/lab5/login')
+    
+    user_id = user['id']
+
+    # ИСПРАВЛЕНИЕ: Используем параметризованные запросы и правильное имя поля
+    cur.execute("SELECT * FROM articles WHERE user_id = %s;", (user_id,))
+    articles = cur.fetchall()
+
+    db_close(conn, cur)
+    return render_template('lab5/articles.html', articles=articles, login=login)
+
 @lab5.route('/lab5/create', methods=['GET', 'POST'])
-def create_article():  # Изменяем имя функции с create на create_article
+def create_article():
     login = session.get('login')
     if not login:
         return redirect('/lab5/login')
