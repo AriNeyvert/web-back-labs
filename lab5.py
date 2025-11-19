@@ -1,7 +1,10 @@
-from flask import Flask, Blueprint, render_template, request, session, redirect, url_for
+from flask import Flask, Blueprint, render_template, request, session, redirect, current_app
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
+import sqlite3
+from os import path
+
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -14,13 +17,20 @@ def index():
     return render_template('lab5/lab5.html', login=session.get('login'))
 
 def db_connect():
-    conn = psycopg2.connect(
-        host='127.0.0.1',
-        database='arina_neyvert_knowledge_base',
-        user='arina_neyvert_knowledge_base',
-        password='1967'
-    )
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    if current_app.config['DB_TYPE'] == 'postres':
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='arina_neyvert_knowledge_base',
+            user='arina_neyvert_knowledge_base',
+            password='1967'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        dir_path = path.dirname(path.realpath(__file__))
+        db_path = path.join(dir_path, "database.db")
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()    
     return conn, cur
 
 def db_close(conn, cur):
@@ -28,7 +38,6 @@ def db_close(conn, cur):
     cur.close()
     conn.close()
 
-# ИСПРАВЛЕНИЕ: Объединяем оба маршрута /lab5/list в один
 @lab5.route('/lab5/list')
 def list_articles():
     login = session.get('login')
@@ -37,7 +46,6 @@ def list_articles():
     
     conn, cur = db_connect()
 
-    # ИСПРАВЛЕНИЕ: Используем параметризованные запросы вместо f-строк
     cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
     user = cur.fetchone()
     
@@ -47,7 +55,6 @@ def list_articles():
     
     user_id = user['id']
 
-    # ИСПРАВЛЕНИЕ: Используем параметризованные запросы и правильное имя поля
     cur.execute("SELECT * FROM articles WHERE user_id = %s;", (user_id,))
     articles = cur.fetchall()
 
