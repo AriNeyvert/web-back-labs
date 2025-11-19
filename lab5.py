@@ -18,7 +18,7 @@ def index():
     return render_template('lab5/lab5.html', login=session.get('login'))
 
 def db_connect():
-    if current_app.config['DB_TYPE'] == 'postgres':  # ИСПРАВЛЕНИЕ: postgres вместо postres
+    if current_app.config['DB_TYPE'] == 'postgres':
         conn = psycopg2.connect(
             host='127.0.0.1',
             database='arina_neyvert_knowledge_base',
@@ -55,21 +55,37 @@ def list_articles():
         return redirect('/lab5/login')
     
     conn, cur = db_connect()
-
-    execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
-    user = cur.fetchone()
     
-    if not user:
+    try:
+        # Получаем ID пользователя
+        execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
+        user = cur.fetchone()
+        
+        if not user:
+            return redirect('/lab5/login')
+        
+        user_id = user['id']
+
+        # Получаем статьи пользователя
+        execute_query(cur, "SELECT * FROM articles WHERE user_id = %s;", (user_id,))
+        articles = cur.fetchall()
+
+        # Преобразуем статьи в список словарей для единообразного доступа
+        articles_list = []
+        for article in articles:
+            if isinstance(article, dict):  # Для PostgreSQL
+                articles_list.append(dict(article))
+            else:  # Для SQLite
+                articles_list.append(dict(article))
+        
+        return render_template('lab5/articles.html', articles=articles_list, login=login)
+    
+    except Exception as e:
+        print(f"Ошибка при получении списка статей: {e}")
+        return render_template('lab5/articles.html', articles=[], login=login, error="Ошибка при загрузке статей")
+    
+    finally:
         db_close(conn, cur)
-        return redirect('/lab5/login')
-    
-    user_id = user['id']
-
-    execute_query(cur, "SELECT * FROM articles WHERE user_id = %s;", (user_id,))
-    articles = cur.fetchall()
-
-    db_close(conn, cur)
-    return render_template('lab5/articles.html', articles=articles, login=login)
 
 @lab5.route('/lab5/create', methods=['GET', 'POST'])
 def create_article():
@@ -88,21 +104,27 @@ def create_article():
 
     conn, cur = db_connect()
 
-    # Получаем id пользователя
-    execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
-    user = cur.fetchone()
-    
-    if not user:
-        db_close(conn, cur)
-        return render_template('lab5/create_article.html', error='Пользователь не найден')
-    
-    user_id = user['id']
+    try:
+        # Получаем id пользователя
+        execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
+        user = cur.fetchone()
+        
+        if not user:
+            return render_template('lab5/create_article.html', error='Пользователь не найден')
+        
+        user_id = user['id']
 
-    execute_query(cur, "INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
-                (user_id, title, article_text))
+        execute_query(cur, "INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
+                    (user_id, title, article_text))
+        
+        return redirect('/lab5/list')
     
-    db_close(conn, cur)
-    return redirect('/lab5/')
+    except Exception as e:
+        print(f"Ошибка при создании статьи: {e}")
+        return render_template('lab5/create_article.html', error='Ошибка при создании статьи')
+    
+    finally:
+        db_close(conn, cur)
 
 @lab5.route('/lab5/register', methods=['GET', 'POST'])
 def register_user():
@@ -117,18 +139,25 @@ def register_user():
     
     conn, cur = db_connect()
 
-    execute_query(cur, "SELECT login FROM users WHERE login = %s;", (login,))
-    if cur.fetchone():
-        db_close(conn, cur)
-        return render_template('lab5/register.html',
+    try:
+        execute_query(cur, "SELECT login FROM users WHERE login = %s;", (login,))
+        if cur.fetchone():
+            return render_template('lab5/register.html',
                                error="Такой пользователь уже существует")
-    
-    password_hash = generate_password_hash(password)
+        
+        password_hash = generate_password_hash(password)
+        print(f"Регистрация: логин={login}, хеш пароля={password_hash}")  # Для отладки
 
-    execute_query(cur, "INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
+        execute_query(cur, "INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
+        
+        return render_template('lab5/success.html', login=login)
     
-    db_close(conn, cur)
-    return render_template('lab5/success.html', login=login)
+    except Exception as e:
+        print(f"Ошибка при регистрации: {e}")
+        return render_template('lab5/register.html', error='Ошибка при регистрации')
+    
+    finally:
+        db_close(conn, cur)
 
 @lab5.route('/lab5/login', methods=['GET', 'POST'])
 def login():
@@ -143,22 +172,35 @@ def login():
     
     conn, cur = db_connect()
 
-    execute_query(cur, "SELECT * FROM users WHERE login = %s;", (login,))
-    user = cur.fetchone()
+    try:
+        execute_query(cur, "SELECT * FROM users WHERE login = %s;", (login,))
+        user = cur.fetchone()
 
-    if not user:
-        db_close(conn, cur)
-        return render_template('lab5/login.html',
+        if not user:
+            print(f"Пользователь {login} не найден")  # Для отладки
+            return render_template('lab5/login.html',
+                               error='Логин и/или пароль неверны')
+        
+        # Получаем пароль из результата запроса
+        user_password = user['password']
+        print(f"Вход: логин={login}, введенный пароль={password}, хеш в БД={user_password}")  # Для отладки
+        
+        # Проверяем пароль
+        if check_password_hash(user_password, password):
+            print("Пароль верный!")  # Для отладки
+            session['login'] = login
+            return redirect('/lab5/')  # Перенаправляем на главную страницу lab5
+        else:
+            print("Пароль неверный!")  # Для отладки
+            return render_template('lab5/login.html',
                                error='Логин и/или пароль неверны')
     
-    if not check_password_hash(user['password'], password):
-        db_close(conn, cur)
-        return render_template('lab5/login.html',
-                               error='Логин и/или пароль неверны')
+    except Exception as e:
+        print(f"Ошибка при входе: {e}")
+        return render_template('lab5/login.html', error='Ошибка при входе в систему')
     
-    session['login'] = login
-    db_close(conn, cur)
-    return render_template('lab5/success_login.html', login=login)
+    finally:
+        db_close(conn, cur)
 
 # Добавляем обработчик для выхода
 @lab5.route('/lab5/logout')
@@ -167,7 +209,7 @@ def logout():
     return redirect('/lab5/')
 
 # Обработчик для favicon.ico
-@lab5.route('/favicon.ico')
+@app.route('/favicon.ico')
 def favicon():
     return '', 404
 
