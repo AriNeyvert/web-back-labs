@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание статьи - База знаний</title>
+    <title>Редактирование статьи - База знаний</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lab5/favicon.ico') }}">
     <style>
         * {
@@ -253,7 +253,7 @@
         </div>
 
         <div class="content">
-            <h1 class="page-title">Создание новой статьи</h1>
+            <h1 class="page-title">Редактирование статьи</h1>
 
             {% if error %}
                 <div class="error-message">
@@ -265,24 +265,24 @@
                 <div class="form-group">
                     <label for="title">Название статьи:</label>
                     <input type="text" id="title" name="title" maxlength="50" required 
-                           placeholder="Введите название статьи (максимум 50 символов)">
+                           value="{{ article.title }}" placeholder="Введите название статьи (максимум 50 символов)">
                     <div class="char-count">
-                        <span id="title-count">0</span>/50 символов
+                        <span id="title-count">{{ article.title|length }}</span>/50 символов
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="article_text">Текст статьи:</label>
                     <textarea id="article_text" name="article_text" required 
-                              placeholder="Введите текст вашей статьи..."></textarea>
+                              placeholder="Введите текст вашей статьи...">{{ article.article_text }}</textarea>
                     <div class="char-count">
-                        <span id="text-count">0</span> символов
+                        <span id="text-count">{{ article.article_text|length }}</span> символов
                     </div>
                 </div>
 
                 <div class="form-actions">
                     <a href="{{ url_for('lab5.list_articles') }}" class="btn-cancel">❌ Отмена</a>
-                    <button type="submit" class="btn-submit">✅ Создать статью</button>
+                    <button type="submit" class="btn-submit">💾 Сохранить изменения</button>
                 </div>
             </form>
         </div>
@@ -304,10 +304,6 @@
         textInput.addEventListener('input', function() {
             textCount.textContent = this.value.length;
         });
-
-        // Инициализация счетчиков
-        titleCount.textContent = titleInput.value.length;
-        textCount.textContent = textInput.value.length;
     </script>
 </body>
 </html>

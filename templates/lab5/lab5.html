@@ -4,99 +4,233 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WEB-программирование, часть 2. Лабораторная работа 5</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lab5/favicon.ico') }}">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #334155;
-            max-width: 1000px;
-            margin: 0 auto;
+            min-height: 100vh;
             padding: 20px;
         }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .header {
             text-align: center;
             margin: 40px 0;
+            color: white;
         }
+
         .header h1 {
-            color: #1e293b;
+            font-size: 2.5rem;
             margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
         .header h2 {
-            color: #64748b;
+            font-size: 1.5rem;
             font-weight: normal;
+            opacity: 0.9;
         }
+
         .nav-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .nav-links {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
+
         .nav-links a {
             text-decoration: none;
             color: #475569;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: white;
         }
+
         .nav-links a:hover {
             background: #3b82f6;
             color: white;
             border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
         .username {
             color: #475569;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 60px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content h3 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            font-size: 1.2rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
             font-weight: 500;
         }
-        .content {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
+
+        .flash-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
         @media (max-width: 768px) {
-            .nav-card { flex-direction: column; align-items: stretch; }
-            .nav-links { justify-content: center; }
+            .nav-card { 
+                flex-direction: column; 
+                align-items: stretch; 
+                text-align: center;
+            }
+            
+            .nav-links { 
+                justify-content: center; 
+            }
+            
+            .user-section {
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .content {
+                padding: 40px 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>WEB-программирование, часть 2</h1>
-        <h2>Лабораторная работа 5 - База знаний</h2>
-    </div>
-
-    <div class="nav-card">
-        <div class="nav-links">
-            <a href="{{ url_for('lab5.list_articles') }}">Список статей</a>
-            <a href="{{ url_for('lab5.create_article') }}">Создать статью</a>
-            <a href="{{ url_for('lab5.login') }}">Войти</a>
-            <a href="{{ url_for('lab5.register_user') }}">Регистрация</a>
+    <div class="container">
+        <div class="header">
+            <h1>WEB-программирование, часть 2</h1>
+            <h2>Лабораторная работа 5 - База знаний</h2>
         </div>
-        <div class="username">
+
+        <div class="nav-card">
+            <div class="nav-links">
+                <a href="{{ url_for('lab5.list_articles') }}">📚 Список статей</a>
+                <a href="{{ url_for('lab5.create_article') }}">✏️ Создать статью</a>
+                {% if not login %}
+                    <a href="{{ url_for('lab5.login') }}">🔐 Войти</a>
+                    <a href="{{ url_for('lab5.register_user') }}">📝 Регистрация</a>
+                {% endif %}
+            </div>
+            <div class="user-section">
+                <div class="username">
+                    {% if login %}
+                        👤 {{ login }}
+                    {% else %}
+                        👤 Anonymous
+                    {% endif %}
+                </div>
+                {% if login %}
+                    <a href="{{ url_for('lab5.logout') }}" class="logout-btn">🚪 Выйти</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content">
+            <h3>Добро пожаловать в Базу знаний!</h3>
+            <p>Здесь вы можете создавать, редактировать и управлять своими статьями.</p>
             {% if login %}
-                {{ login }}
+                <p style="margin-top: 20px; color: #3b82f6; font-weight: 500;">
+                    Вы вошли как <strong>{{ login }}</strong>. Приятной работы!
+                </p>
             {% else %}
-                Anonymous
+                <p style="margin-top: 20px; color: #64748b;">
+                    Для работы с системой войдите или зарегистрируйтесь.
+                </p>
             {% endif %}
         </div>
-    </div>
-
-    <div class="content">
-        <h3>Добро пожаловать!</h3>
-        <p>Выберите действие из меню выше для работы с базой знаний.</p>
     </div>
 </body>
 </html>

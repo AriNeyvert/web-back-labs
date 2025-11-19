@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, request, session, redirect, current_app
+from flask import Flask, Blueprint, render_template, request, session, redirect, current_app, flash, url_for
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -67,7 +67,7 @@ def list_articles():
         user_id = user['id']
 
         # Получаем статьи пользователя
-        execute_query(cur, "SELECT * FROM articles WHERE user_id = %s;", (user_id,))
+        execute_query(cur, "SELECT * FROM articles WHERE user_id = %s ORDER BY id DESC;", (user_id,))
         articles = cur.fetchall()
 
         # Преобразуем статьи в список словарей для единообразного доступа
@@ -94,13 +94,17 @@ def create_article():
         return redirect('/lab5/login')
     
     if request.method == 'GET':
-        return render_template('lab5/create_article.html')
+        return render_template('lab5/create_article.html', login=login)
     
     title = request.form.get('title')
     article_text = request.form.get('article_text')
 
-    if not (title and article_text):
-        return render_template('lab5/create_article.html', error='Заполните все поля')
+    # Валидация - проверка на пустые поля
+    if not title or not title.strip():
+        return render_template('lab5/create_article.html', error='Заполните название статьи', login=login)
+    
+    if not article_text or not article_text.strip():
+        return render_template('lab5/create_article.html', error='Заполните текст статьи', login=login)
 
     conn, cur = db_connect()
 
@@ -110,18 +114,100 @@ def create_article():
         user = cur.fetchone()
         
         if not user:
-            return render_template('lab5/create_article.html', error='Пользователь не найден')
+            return render_template('lab5/create_article.html', error='Пользователь не найден', login=login)
         
         user_id = user['id']
 
         execute_query(cur, "INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
-                    (user_id, title, article_text))
+                    (user_id, title.strip(), article_text.strip()))
         
         return redirect('/lab5/list')
     
     except Exception as e:
         print(f"Ошибка при создании статьи: {e}")
-        return render_template('lab5/create_article.html', error='Ошибка при создании статьи')
+        return render_template('lab5/create_article.html', error='Ошибка при создании статьи', login=login)
+    
+    finally:
+        db_close(conn, cur)
+
+@lab5.route('/lab5/edit/<int:article_id>', methods=['GET', 'POST'])
+def edit_article(article_id):
+    login = session.get('login')
+    if not login:
+        return redirect('/lab5/login')
+    
+    conn, cur = db_connect()
+    
+    try:
+        # Получаем ID пользователя
+        execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
+        user = cur.fetchone()
+        
+        if not user:
+            return redirect('/lab5/login')
+        
+        user_id = user['id']
+
+        # Проверяем, принадлежит ли статья пользователю
+        execute_query(cur, "SELECT * FROM articles WHERE id = %s AND user_id = %s;", (article_id, user_id))
+        article = cur.fetchone()
+        
+        if not article:
+            return render_template('lab5/error.html', error='Статья не найдена или у вас нет прав для ее редактирования', login=login)
+
+        if request.method == 'GET':
+            return render_template('lab5/edit_article.html', article=dict(article), login=login)
+        
+        # Обработка формы редактирования
+        title = request.form.get('title')
+        article_text = request.form.get('article_text')
+
+        # Валидация
+        if not title or not title.strip():
+            return render_template('lab5/edit_article.html', article=dict(article), error='Заполните название статьи', login=login)
+        
+        if not article_text or not article_text.strip():
+            return render_template('lab5/edit_article.html', article=dict(article), error='Заполните текст статьи', login=login)
+
+        # Обновляем статью
+        execute_query(cur, "UPDATE articles SET title = %s, article_text = %s WHERE id = %s AND user_id = %s;", 
+                     (title.strip(), article_text.strip(), article_id, user_id))
+        
+        return redirect('/lab5/list')
+    
+    except Exception as e:
+        print(f"Ошибка при редактировании статьи: {e}")
+        return render_template('lab5/edit_article.html', article=dict(article), error='Ошибка при редактировании статьи', login=login)
+    
+    finally:
+        db_close(conn, cur)
+
+@lab5.route('/lab5/delete/<int:article_id>', methods=['POST'])
+def delete_article(article_id):
+    login = session.get('login')
+    if not login:
+        return redirect('/lab5/login')
+    
+    conn, cur = db_connect()
+    
+    try:
+        # Получаем ID пользователя
+        execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
+        user = cur.fetchone()
+        
+        if not user:
+            return redirect('/lab5/login')
+        
+        user_id = user['id']
+
+        # Проверяем, принадлежит ли статья пользователю и удаляем
+        execute_query(cur, "DELETE FROM articles WHERE id = %s AND user_id = %s;", (article_id, user_id))
+        
+        return redirect('/lab5/list')
+    
+    except Exception as e:
+        print(f"Ошибка при удалении статьи: {e}")
+        return redirect('/lab5/list')
     
     finally:
         db_close(conn, cur)

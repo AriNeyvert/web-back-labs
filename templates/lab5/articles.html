@@ -1,11 +1,323 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои статьи - База знаний</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lab5/favicon.ico') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block lab %}Лабораторная работа 5{% endblock %}
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #334155;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-{% block main %}
-    <h1>Статьи</h1>
-    {% for article in articles %}
-        <h2>{{ article['title'] }}</h2>
-        <blockquote>{{ article['article_text'] }}</blockquote>
-    {% endfor %}
-{% endblock %}
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin: 40px 0;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: white;
+        }
+
+        .nav-links a:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .username {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .page-title {
+            color: #1e293b;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .articles-list {
+            display: grid;
+            gap: 25px;
+        }
+
+        .article-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .article-title {
+            color: #1e293b;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .article-text {
+            color: #475569;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .no-articles {
+            text-align: center;
+            color: #64748b;
+            padding: 60px 20px;
+            font-size: 1.2rem;
+        }
+
+        .no-articles h3 {
+            color: #475569;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .create-first-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .create-first-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .nav-card { 
+                flex-direction: column; 
+                align-items: stretch; 
+                text-align: center;
+            }
+            
+            .nav-links { 
+                justify-content: center; 
+            }
+            
+            .user-section {
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .article-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .article-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>База знаний</h1>
+            <p>Лабораторная работа 5</p>
+        </div>
+
+        <div class="nav-card">
+            <div class="nav-links">
+                <a href="{{ url_for('lab5.index') }}">🏠 Главная</a>
+                <a href="{{ url_for('lab5.list_articles') }}">📚 Мои статьи</a>
+                <a href="{{ url_for('lab5.create_article') }}">✏️ Создать статью</a>
+            </div>
+            <div class="user-section">
+                <div class="username">👤 {{ login }}</div>
+                <a href="{{ url_for('lab5.logout') }}" class="logout-btn">🚪 Выйти</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <h1 class="page-title">Мои статьи</h1>
+
+            {% if error %}
+                <div class="error-message">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            {% if articles %}
+                <div class="articles-list">
+                    {% for article in articles %}
+                        <div class="article-card">
+                            <div class="article-header">
+                                <h2 class="article-title">{{ article['title'] }}</h2>
+                                <div class="article-actions">
+                                    <a href="{{ url_for('lab5.edit_article', article_id=article['id']) }}" class="btn btn-edit">✏️ Редактировать</a>
+                                    <form method="POST" action="{{ url_for('lab5.delete_article', article_id=article['id']) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-delete" onclick="return confirm('Вы уверены, что хотите удалить эту статью?')">🗑️ Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="article-text">{{ article['article_text'] }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-articles">
+                    <h3>У вас пока нет статей</h3>
+                    <p>Создайте свою первую статью, чтобы начать работу с базой знаний</p>
+                    <a href="{{ url_for('lab5.create_article') }}" class="create-first-btn">Создать первую статью</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
