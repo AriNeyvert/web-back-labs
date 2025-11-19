@@ -5,9 +5,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 from os import path
 
-
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
+# Добавляем конфигурацию для типа базы данных
+app.config['DB_TYPE'] = 'sqlite'  # или 'postgres'
 
 # Создаем Blueprint для lab5
 lab5 = Blueprint('lab5', __name__, template_folder='templates', static_folder='static')
@@ -17,7 +18,7 @@ def index():
     return render_template('lab5/lab5.html', login=session.get('login'))
 
 def db_connect():
-    if current_app.config['DB_TYPE'] == 'postres':
+    if current_app.config['DB_TYPE'] == 'postgres':  # ИСПРАВЛЕНИЕ: postgres вместо postres
         conn = psycopg2.connect(
             host='127.0.0.1',
             database='arina_neyvert_knowledge_base',
@@ -38,6 +39,15 @@ def db_close(conn, cur):
     cur.close()
     conn.close()
 
+def execute_query(cur, query, params):
+    """Универсальная функция для выполнения запросов с учетом типа БД"""
+    if current_app.config['DB_TYPE'] == 'postgres':
+        cur.execute(query, params)
+    else:
+        # Заменяем %s на ? для SQLite
+        query = query.replace('%s', '?')
+        cur.execute(query, params)
+
 @lab5.route('/lab5/list')
 def list_articles():
     login = session.get('login')
@@ -46,7 +56,7 @@ def list_articles():
     
     conn, cur = db_connect()
 
-    cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
+    execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
     user = cur.fetchone()
     
     if not user:
@@ -55,7 +65,7 @@ def list_articles():
     
     user_id = user['id']
 
-    cur.execute("SELECT * FROM articles WHERE user_id = %s;", (user_id,))
+    execute_query(cur, "SELECT * FROM articles WHERE user_id = %s;", (user_id,))
     articles = cur.fetchall()
 
     db_close(conn, cur)
@@ -79,7 +89,7 @@ def create_article():
     conn, cur = db_connect()
 
     # Получаем id пользователя
-    cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
+    execute_query(cur, "SELECT id FROM users WHERE login = %s;", (login,))
     user = cur.fetchone()
     
     if not user:
@@ -88,8 +98,7 @@ def create_article():
     
     user_id = user['id']
 
-    # Используем параметризованные запросы
-    cur.execute("INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
+    execute_query(cur, "INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", 
                 (user_id, title, article_text))
     
     db_close(conn, cur)
@@ -108,14 +117,15 @@ def register_user():
     
     conn, cur = db_connect()
 
-    cur.execute("SELECT login FROM users WHERE login = %s;", (login,))
+    execute_query(cur, "SELECT login FROM users WHERE login = %s;", (login,))
     if cur.fetchone():
         db_close(conn, cur)
         return render_template('lab5/register.html',
                                error="Такой пользователь уже существует")
     
     password_hash = generate_password_hash(password)
-    cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
+
+    execute_query(cur, "INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
     
     db_close(conn, cur)
     return render_template('lab5/success.html', login=login)
@@ -133,7 +143,7 @@ def login():
     
     conn, cur = db_connect()
 
-    cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+    execute_query(cur, "SELECT * FROM users WHERE login = %s;", (login,))
     user = cur.fetchone()
 
     if not user:
