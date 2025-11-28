@@ -3,87 +3,197 @@
 
 {% block script %}
 <script>
-function get0fficeList() {
+// Функция для получения списка офисов
+function getOfficeList() {
     const url = '/lab6/json-rpc-api';
     const json = {
         'jsonrpc': '2.0',
         'method': 'info',
-        'id': Math.round(Math.random()*1000)
+        'id': Math.round(Math.random() * 1000)
     };
+    
     fetch(url, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(json)
     })
-    .then(function(response){
-        return response.json()
+    .then(function(response) {
+        return response.json();
     })
     .then(function(data) {
         if (data.error) {
-            switch(data.error.code){
-                case 1:
-                    alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
-                    break;
-                case 2:
-                    alert('Офис уже арендуется');
-                    break;
-                case -32601:
-                    alert('Странная ошибка');
-                    break;
-            }
+            handleError(data.error);
+        } else {
+            updateOfficeList(data.result);
         }
-        else {
-            const office_list = data.result;
-            const ul = document.getElementById('office-list');
-            ul.innerHTML = '';
-            
-            for(let i = 0; i < office_list.length; i++) {
-                const office = office_list[i];
-                const li = document.createElement('li');
-                li.innerText = `${office.number}: ${office.tenant || 'свободен'}`;
-
-                const bookingButton = document.createElement('button');
-                bookingButton.innerText = 'зарезервировать';
-                bookingButton.onclick = function() {booking(office.number)};
-                li.appendChild(bookingButton);
-
-                ul.appendChild(li);
-            }
-        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при загрузке данных');
     });
 }
 
-function booking(officeNumber) {
+// Функция для обработки ошибок
+function handleError(error) {
+    switch(error.code) {
+        case 1:
+            alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
+            break;
+        case 2:
+            alert('Офис уже арендован');
+            break;
+        case 3:
+            alert('Офис не арендован');
+            break;
+        case 4:
+            alert('Вы можете снять только свою аренду');
+            break;
+        case -32601:
+            alert('Метод не найден');
+            break;
+        default:
+            alert('Неизвестная ошибка: ' + error.message);
+    }
+}
+
+// Функция для обновления списка офисов на странице
+function updateOfficeList(officeList) {
+    const ul = document.getElementById('office-list');
+    ul.innerHTML = '';
+    
+    officeList.forEach(function(office) {
+        const li = document.createElement('li');
+        li.style.margin = '10px 0';
+        li.style.padding = '10px';
+        li.style.border = '1px solid #ccc';
+        li.style.borderRadius = '5px';
+        
+        // Отображение информации об офисе
+        const officeInfo = document.createElement('span');
+        officeInfo.style.marginRight = '10px';
+        officeInfo.textContent = `Офис ${office.number}: ${office.tenant ? 'занят (' + office.tenant + ')' : 'свободен'}`;
+        li.appendChild(officeInfo);
+        
+        // Создание кнопок в зависимости от статуса офиса
+        if (!office.tenant) {
+            // Кнопка бронирования для свободного офиса
+            const bookButton = document.createElement('button');
+            bookButton.textContent = 'Забронировать';
+            bookButton.style.marginLeft = '10px';
+            bookButton.style.padding = '5px 10px';
+            bookButton.onclick = function() { 
+                bookOffice(office.number); 
+            };
+            li.appendChild(bookButton);
+        } else {
+            // Кнопка освобождения для занятого офиса
+            const freeButton = document.createElement('button');
+            freeButton.textContent = 'Освободить';
+            freeButton.style.marginLeft = '10px';
+            freeButton.style.padding = '5px 10px';
+            freeButton.style.backgroundColor = '#ff6b6b';
+            freeButton.style.color = 'white';
+            freeButton.style.border = 'none';
+            freeButton.style.borderRadius = '3px';
+            freeButton.onclick = function() { 
+                freeOffice(office.number); 
+            };
+            li.appendChild(freeButton);
+        }
+        
+        ul.appendChild(li);
+    });
+}
+
+// Функция для бронирования офиса
+function bookOffice(officeNumber) {
     const url = '/lab6/json-rpc-api/';
     const json = {
         'jsonrpc': '2.0',
         'method': 'booking',
         'params': officeNumber,
-        'id': Math.round(Math.random()*1000)
+        'id': Math.round(Math.random() * 1000)
     };
+    
     fetch(url, {
-        method:'POST',
+        method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(json)
     })
     .then(function(response) {
-        return response.json()
+        return response.json();
     })
-    .then(function(data){
-        // Обработка ответа от сервера после бронирования
-        // Например, можно обновить список кабинетов
-        get0fficeList();
+    .then(function(data) {
+        if (data.error) {
+            handleError(data.error);
+        } else {
+            // Обновляем список после успешного бронирования
+            getOfficeList();
+            alert('Офис успешно забронирован!');
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при бронировании');
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    get0fficeList();
-});
+// Функция для освобождения офиса
+function freeOffice(officeNumber) {
+    const url = '/lab6/json-rpc-api/';
+    const json = {
+        'jsonrpc': '2.0',
+        'method': 'cancellation',
+        'params': officeNumber,
+        'id': Math.round(Math.random() * 1000)
+    };
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(json)
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.error) {
+            handleError(data.error);
+        } else {
+            // Обновляем список после успешного освобождения
+            getOfficeList();
+            alert('Офис успешно освобожден!');
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при освобождении офиса');
+    });
+}
 
+// Загрузка списка офисов при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    getOfficeList();
+    
+    // Добавляем кнопку для ручного обновления списка
+    const refreshButton = document.createElement('button');
+    refreshButton.textContent = 'Обновить список';
+    refreshButton.style.margin = '10px 0';
+    refreshButton.style.padding = '10px 20px';
+    refreshButton.style.backgroundColor = '#4CAF50';
+    refreshButton.style.color = 'white';
+    refreshButton.style.border = 'none';
+    refreshButton.style.borderRadius = '5px';
+    refreshButton.onclick = getOfficeList;
+    
+    const mainElement = document.querySelector('main');
+    mainElement.insertBefore(refreshButton, document.getElementById('office-list'));
+});
 </script>
 {% endblock %}
 
 {% block main %}
-    <h1>Список кабинетов</h1>
+    <h1>Система бронирования офисов</h1>
+    <p>Список доступных офисов:</p>
     <ul id="office-list"></ul>
 {% endblock %}
