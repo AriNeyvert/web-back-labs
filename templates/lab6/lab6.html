@@ -61,48 +61,119 @@ function updateOfficeList(officeList) {
     const ul = document.getElementById('office-list');
     ul.innerHTML = '';
     
+    let totalCost = 0;
+    let userBookings = 0;
+    const login = '{{ session.get("login", "") }}'; // Получаем логин из сессии
+    
     officeList.forEach(function(office) {
         const li = document.createElement('li');
         li.style.margin = '10px 0';
         li.style.padding = '10px';
         li.style.border = '1px solid #ccc';
         li.style.borderRadius = '5px';
+        li.style.display = 'flex';
+        li.style.justifyContent = 'space-between';
+        li.style.alignItems = 'center';
         
         // Отображение информации об офисе
-        const officeInfo = document.createElement('span');
-        officeInfo.style.marginRight = '10px';
-        officeInfo.textContent = `Офис ${office.number}: ${office.tenant ? 'занят (' + office.tenant + ')' : 'свободен'}`;
+        const officeInfo = document.createElement('div');
+        officeInfo.style.flex = '1';
+        
+        const statusText = office.tenant ? 
+            `занят (${office.tenant})` : 
+            'свободен';
+        
+        officeInfo.innerHTML = `
+            <strong>Офис ${office.number}</strong><br>
+            Статус: ${statusText}<br>
+            Стоимость: <strong>${office.price} руб.</strong>
+        `;
         li.appendChild(officeInfo);
         
+        // Подсчет общей стоимости для текущего пользователя
+        if (office.tenant === login) {
+            totalCost += office.price;
+            userBookings++;
+        }
+        
         // Создание кнопок в зависимости от статуса офиса
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.marginLeft = '10px';
+        
         if (!office.tenant) {
             // Кнопка бронирования для свободного офиса
             const bookButton = document.createElement('button');
             bookButton.textContent = 'Забронировать';
-            bookButton.style.marginLeft = '10px';
-            bookButton.style.padding = '5px 10px';
+            bookButton.style.padding = '8px 15px';
+            bookButton.style.backgroundColor = '#4CAF50';
+            bookButton.style.color = 'white';
+            bookButton.style.border = 'none';
+            bookButton.style.borderRadius = '3px';
+            bookButton.style.cursor = 'pointer';
             bookButton.onclick = function() { 
                 bookOffice(office.number); 
             };
-            li.appendChild(bookButton);
+            buttonContainer.appendChild(bookButton);
         } else {
             // Кнопка освобождения для занятого офиса
             const freeButton = document.createElement('button');
             freeButton.textContent = 'Освободить';
-            freeButton.style.marginLeft = '10px';
-            freeButton.style.padding = '5px 10px';
+            freeButton.style.padding = '8px 15px';
             freeButton.style.backgroundColor = '#ff6b6b';
             freeButton.style.color = 'white';
             freeButton.style.border = 'none';
             freeButton.style.borderRadius = '3px';
+            freeButton.style.cursor = 'pointer';
             freeButton.onclick = function() { 
                 freeOffice(office.number); 
             };
-            li.appendChild(freeButton);
+            
+            // Показываем кнопку только если офис забронирован текущим пользователем
+            if (office.tenant === login) {
+                buttonContainer.appendChild(freeButton);
+            } else {
+                const occupiedText = document.createElement('span');
+                occupiedText.textContent = 'Занят другим';
+                occupiedText.style.color = '#666';
+                occupiedText.style.fontStyle = 'italic';
+                buttonContainer.appendChild(occupiedText);
+            }
         }
         
+        li.appendChild(buttonContainer);
         ul.appendChild(li);
     });
+    
+    // Обновляем информацию о стоимости
+    updateCostInfo(totalCost, userBookings);
+}
+
+// Функция для обновления информации о стоимости
+function updateCostInfo(totalCost, userBookings) {
+    let costInfo = document.getElementById('cost-info');
+    if (!costInfo) {
+        costInfo = document.createElement('div');
+        costInfo.id = 'cost-info';
+        costInfo.style.marginTop = '20px';
+        costInfo.style.padding = '15px';
+        costInfo.style.backgroundColor = '#f8f9fa';
+        costInfo.style.border = '1px solid #dee2e6';
+        costInfo.style.borderRadius = '5px';
+        document.querySelector('main').appendChild(costInfo);
+    }
+    
+    if (userBookings > 0) {
+        costInfo.innerHTML = `
+            <h3>Ваша аренда</h3>
+            <p>Количество забронированных офисов: <strong>${userBookings}</strong></p>
+            <p>Общая стоимость аренды: <strong style="color: #e74c3c; font-size: 1.2em;">${totalCost} руб.</strong></p>
+        `;
+    } else {
+        costInfo.innerHTML = `
+            <h3>Ваша аренда</h3>
+            <p>У вас нет забронированных офисов</p>
+        `;
+    }
 }
 
 // Функция для бронирования офиса
@@ -180,10 +251,11 @@ document.addEventListener('DOMContentLoaded', function() {
     refreshButton.textContent = 'Обновить список';
     refreshButton.style.margin = '10px 0';
     refreshButton.style.padding = '10px 20px';
-    refreshButton.style.backgroundColor = '#4CAF50';
+    refreshButton.style.backgroundColor = '#3498db';
     refreshButton.style.color = 'white';
     refreshButton.style.border = 'none';
     refreshButton.style.borderRadius = '5px';
+    refreshButton.style.cursor = 'pointer';
     refreshButton.onclick = getOfficeList;
     
     const mainElement = document.querySelector('main');

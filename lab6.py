@@ -2,10 +2,11 @@ from flask import Blueprint, render_template, request, session
 
 lab6 = Blueprint('lab6', __name__)
 
-# Инициализация списка офисов
+# Инициализация списка офисов с разной стоимостью
 offices = []
 for i in range(1, 11):
-    offices.append({"number": i, "tenant": ""})
+    # Разная стоимость: 900 + остаток от деления на 3
+    offices.append({"number": i, "tenant": "", "price": 900 + i % 3 * 100})
 
 @lab6.route('/lab6/')
 def main():
