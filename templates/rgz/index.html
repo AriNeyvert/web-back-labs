@@ -1,0 +1,59 @@
+{% extends "rgz/base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="color: #2c3e50;">Добро пожаловать, {{ user_name }}!</h2>
+    <div>
+        {% if is_admin %}
+            <span style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8em;">
+                Администратор
+            </span>
+        {% endif %}
+        <form action="{{ url_for('rgz.delete_account') }}" method="POST" style="display: inline; margin-left: 10px;">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить свой аккаунт?')">
+                Удалить аккаунт
+            </button>
+        </form>
+    </div>
+</div>
+
+{% if is_admin %}
+<div class="admin-controls">
+    <h3 style="color: #e74c3c; margin-bottom: 15px;">Панель администратора</h3>
+    <a href="{{ url_for('rgz.admin_create_session') }}" class="btn btn-success">Создать новый сеанс</a>
+</div>
+{% endif %}
+
+<h3 style="color: #2c3e50; margin-bottom: 20px;">Доступные сеансы</h3>
+
+{% if sessions %}
+<div class="sessions-grid">
+    {% for session in sessions %}
+    <div class="session-card">
+        <div class="session-title">{{ session[1] }}</div>
+        <div class="session-datetime">
+            📅 {{ session[2] }}<br>
+            ⏰ {{ session[3] }}
+        </div>
+        <a href="{{ url_for('rgz.view_session', session_id=session[0]) }}" class="btn">
+            Выбрать места
+        </a>
+        {% if is_admin %}
+        <div style="margin-top: 10px;">
+            <a href="{{ url_for('rgz.admin_delete_session', session_id=session[0]) }}" 
+               class="btn btn-danger" 
+               style="padding: 5px 10px; font-size: 0.8em;"
+               onclick="return confirm('Удалить этот сеанс?')">
+                Удалить
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+    Нет доступных сеансов.
+</p>
+{% endif %}
+{% endblock %}
