@@ -6,6 +6,12 @@ import datetime
 
 rgz = Blueprint('rgz', __name__)
 
+import sqlite3
+
+def get_db_connection():
+    conn = sqlite3.connect('cinema.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 # Конфигурация БД
 def get_db_connection():
     conn = psycopg2.connect(
