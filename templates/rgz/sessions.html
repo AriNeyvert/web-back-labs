@@ -1,0 +1,68 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}Сеансы{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-calendar-alt me-2"></i>Сеансы</h1>
+    {% if session.is_admin %}
+    <a href="{{ url_for('rgz.admin_sessions') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Добавить сеанс
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for session in sessions %}
+    <div class="col-md-6 mb-4">
+        <div class="card session-card {% if session.is_past %}past-session{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">{{ session.movie_title }}</h5>
+                    <span class="badge bg-{% if session.is_past %}secondary{% else %}primary{% endif %}">
+                        {{ session.price }} ₽
+                    </span>
+                </div>
+                
+                <p class="card-text text-muted mb-2">
+                    <i class="fas fa-clock me-1"></i>{{ session.session_time[:5] }}
+                    <i class="fas fa-calendar ms-3 me-1"></i>{{ session.session_date }}
+                </p>
+                
+                {% if session.movie_description %}
+                <p class="card-text mb-3">{{ session.movie_description[:150] }}...</p>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-info">
+                            <i class="fas fa-chair me-1"></i>
+                            {{ session.available_seats }} / {{ cinema_config.total_seats }} свободно
+                        </span>
+                        {% if session.is_past %}
+                        <span class="badge bg-warning ms-2">
+                            <i class="fas fa-history me-1"></i>Прошедший
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <a href="{{ url_for('rgz.session_detail', session_id=session.id) }}" 
+                           class="btn btn-{% if session.is_past %}secondary{% else %}primary{% endif %} btn-sm">
+                            <i class="fas fa-eye me-1"></i>
+                            {% if session.is_past %}Просмотр{% else %}Выбрать места{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>На данный момент нет доступных сеансов.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

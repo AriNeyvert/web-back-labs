@@ -5,58 +5,27 @@ from lab3 import lab3
 from lab4 import lab4
 from lab5 import lab5
 from lab6 import lab6
+from rgz import rgz_bp
 import datetime
 import os
 
 app = Flask(__name__)
 
-
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
 app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
 
+# Регистрируем все Blueprints
 app.register_blueprint(lab1)
 app.register_blueprint(lab2)
 app.register_blueprint(lab3)
 app.register_blueprint(lab4)
 app.register_blueprint(lab5)
 app.register_blueprint(lab6)
+app.register_blueprint(rgz_bp)
+
 # Глобальная переменная для хранения лога 404 ошибок
 error_log = []
 
-
-@app.route("/")
-@app.route("/index")
-def index():
-    return '''
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>НГТУ, ФБ, Лабораторные работы</title>
-    </head>
-    <body>
-        <h1>НГТУ, ФБ, WEB-программирование, часть 2.<br> Список лабораторных</h1>
-        <ul>
-            <li><a href="/lab1">Первая лабораторная</a></li>
-            <li><a href="/lab2">Вторая лабораторная</a></li>
-            <li><a href="/lab3">Третья лабораторная</a></li>
-            <li><a href="/lab4">Четвертая лабораторная</a></li>
-            <li><a href="/lab5">Пятая лабораторная</a></li>
-            <li><a href="/lab6">Шестая лабораторная</a></li>
-        </ul>
-        <footer>
-            <p>Нейверт Арина Сергеевна</p>
-            <p>Группа: ФБИ-33</p>
-            <p>Курс: 3</p>
-            <p>2025 год</p>
-        </footer>
-    </body>
-</html>
-'''
-
-
-
-@app.errorhandler(404)
 def generate_log_html():
     """Генерирует HTML для отображения лога ошибок"""
     if not error_log:
@@ -73,6 +42,104 @@ def generate_log_html():
         '''
     return log_html
 
+@app.route("/")
+@app.route("/index")
+def index():
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>НГТУ, ФБ, Лабораторные работы</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                color: white;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.95);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                color: #333;
+            }
+            h1 {
+                color: #4a5568;
+                border-bottom: 3px solid #667eea;
+                padding-bottom: 10px;
+                margin-bottom: 30px;
+            }
+            .lab-list {
+                list-style: none;
+                padding: 0;
+            }
+            .lab-list li {
+                margin-bottom: 15px;
+            }
+            .lab-list a {
+                display: block;
+                padding: 15px 20px;
+                background: #667eea;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                font-weight: bold;
+                text-align: center;
+            }
+            .lab-list a:hover {
+                background: #5a67d8;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+            .rgz-link {
+                background: #ed64a6 !important;
+                margin-top: 30px;
+                font-size: 1.1em;
+            }
+            .rgz-link:hover {
+                background: #d53f8c !important;
+            }
+            footer {
+                margin-top: 40px;
+                text-align: center;
+                color: #4a5568;
+                font-size: 0.9em;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>НГТУ, ФБ, WEB-программирование, часть 2</h1>
+            <h2>Список лабораторных работ</h2>
+            <ul class="lab-list">
+                <li><a href="/lab1">Первая лабораторная</a></li>
+                <li><a href="/lab2">Вторая лабораторная</a></li>
+                <li><a href="/lab3">Третья лабораторная</a></li>
+                <li><a href="/lab4">Четвертая лабораторная</a></li>
+                <li><a href="/lab5">Пятая лабораторная</a></li>
+                <li><a href="/lab6">Шестая лабораторная</a></li>
+                <li><a href="/rgz" class="rgz-link">Расчетно-графическое задание: Кинотеатр</a></li>
+            </ul>
+            <footer>
+                <p><strong>Студент:</strong> Нейверт Арина Сергеевна</p>
+                <p><strong>Группа:</strong> ФБИ-33</p>
+                <p><strong>Курс:</strong> 3</p>
+                <p>© 2025 год</p>
+            </footer>
+        </div>
+    </body>
+</html>
+'''
+
+@app.errorhandler(404)
 def not_found(err):
     # Получаем информацию о запросе
     client_ip = request.remote_addr
@@ -150,6 +217,12 @@ def not_found(err):
                 text-align: center;
                 margin: 20px 0;
             }}
+            img {{
+                max-width: 300px;
+                border-radius: 10px;
+                display: block;
+                margin: 0 auto;
+            }}
         </style>
     </head>
     <body>
@@ -175,7 +248,6 @@ def not_found(err):
 </html>
 ''', 404
 
-
 @app.errorhandler(500)
 def internal_error(err):
     return '''
@@ -185,14 +257,52 @@ def internal_error(err):
         <meta charset="utf-8">
         <title>Ошибка 500</title>
         <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center}}
-            h1 {{ color: #212529; }}
+            body {{ 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                text-align: center;
+                background: #f8f9fa;
+                padding: 50px;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            h1 {{ 
+                color: #dc3545;
+                margin-bottom: 20px;
+            }}
+            p {{
+                color: #6c757d;
+                margin-bottom: 30px;
+            }}
+            a {{
+                display: inline-block;
+                padding: 10px 20px;
+                background: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background 0.3s;
+            }}
+            a:hover {{
+                background: #0056b3;
+            }}
         </style>
     </head>
     <body>
-        <h1>ОШИБКА 500</h1>
-        <p>Произошла внутренняя ошибка!<br></p>
-        <a href="/">Главная страница</a>
+        <div class="container">
+            <h1>ОШИБКА 500</h1>
+            <p>Произошла внутренняя ошибка сервера!</p>
+            <p>Пожалуйста, попробуйте позже или обратитесь к администратору.</p>
+            <a href="/">Вернуться на главную страницу</a>
+        </div>
     </body>
 </html>
 ''', 500
+
+if __name__ == '__main__':
+    app.run(debug=True)

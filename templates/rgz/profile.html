@@ -1,0 +1,125 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <div class="avatar-circle mb-3" style="
+                        width: 120px;
+                        height: 120px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 50%;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 48px;
+                    ">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>{{ user.name }}</h3>
+                    <p class="text-muted">@{{ user.login }}</p>
+                    {% if user.is_admin %}
+                    <span class="badge bg-warning">
+                        <i class="fas fa-crown me-1"></i>Администратор
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Зарегистрирован:</span>
+                        <strong>{{ user.created_at[:10] }}</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Всего бронирований:</span>
+                        <strong>{{ bookings|length }}</strong>
+                    </div>
+                </div>
+                
+                {% if not user.is_admin %}
+                <div class="mt-4">
+                    <form action="{{ url_for('rgz.delete_account') }}" method="POST" 
+                          onsubmit="return confirmDeleteAccount()">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Удалить аккаунт
+                        </button>
+                    </form>
+                    <p class="text-muted mt-2 small">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Это действие нельзя отменить
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-4">
+                    <i class="fas fa-ticket-alt me-2"></i>Мои бронирования
+                </h3>
+                
+                {% if bookings %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Фильм</th>
+                                <th>Дата и время</th>
+                                <th>Место</th>
+                                <th>Цена</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>{{ booking.movie_title }}</td>
+                                <td>
+                                    {{ booking.session_date }}<br>
+                                    <small class="text-muted">{{ booking.session_time[:5] }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">Место {{ booking.seat_number }}</span>
+                                </td>
+                                <td>{{ booking.price }} ₽</td>
+                                <td>
+                                    {% if booking.is_past %}
+                                    <span class="badge bg-secondary">Прошедший</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Активный</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    У вас пока нет бронирований. 
+                    <a href="{{ url_for('rgz.sessions') }}" class="alert-link">Выберите сеанс</a>, 
+                    чтобы забронировать места.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDeleteAccount() {
+        return confirm('Вы уверены, что хотите удалить свой аккаунт? Все ваши бронирования будут удалены. Это действие нельзя отменить.');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h3>{{ total_users }}</h3>
+                <p class="mb-0">Пользователей</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <i class="fas fa-film fa-3x mb-3"></i>
+                <h3>{{ total_movies }}</h3>
+                <p class="mb-0">Фильмов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                <h3>{{ total_sessions }}</h3>
+                <p class="mb-0">Сеансов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-ticket-alt fa-3x mb-3"></i>
+                <h3>{{ total_bookings }}</h3>
+                <p class="mb-0">Бронирований</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="fas fa-cogs me-2"></i>Быстрые действия
+                </h4>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('rgz.admin_movies') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-film me-2"></i>Управление фильмами
+                    </a>
+                    <a href="{{ url_for('rgz.admin_sessions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar-plus me-2"></i>Добавить сеанс
+                    </a>
+                    <a href="{{ url_for('rgz.admin_users') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-cog me-2"></i>Управление пользователями
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="fas fa-chart-line me-2"></i>Последние бронирования
+                </h4>
+                
+                {% if recent_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Пользователь</th>
+                                <th>Фильм</th>
+                                <th>Место</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in recent_bookings %}
+                            <tr>
+                                <td>{{ booking.user_name }}</td>
+                                <td>{{ booking.movie_title }}</td>
+                                <td>{{ booking.seat_number }}</td>
+                                <td>
+                                    <a href="{{ url_for('rgz.admin_cancel_booking', booking_id=booking.id) }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Отменить бронирование?')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет недавних бронирований</p>
+                                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="fas fa-info-circle me-2"></i>Информация для проверки
+                </h4>
+                
+                <div class="alert alert-info">
+                    <h5>Учетные данные администратора:</h5>
+                    <p><strong>Логин:</strong> admin</p>
+                    <p><strong>Пароль:</strong> Admin123!</p>
+                    <p class="mb-0"><strong>Возможности:</strong> управление фильмами, сеансами, пользователями, снятие брони</p>
+                </div>
+                
+                <div class="alert alert-light">
+                    <h5>Тестовые пользователи:</h5>
+                    <p>В системе автоматически создано 10 тестовых пользователей:</p>
+                    <ul>
+                        <li>ivanov / Ivan123!</li>
+                        <li>petrov / Petr123!</li>
+                        <li>sidorov / Sidor123!</li>
+                        <li>... и другие</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

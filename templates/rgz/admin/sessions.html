@@ -1,0 +1,114 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}Управление сеансами{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-calendar-alt me-2"></i>Управление сеансами</h1>
+    <a href="{{ url_for('rgz.admin_panel') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Назад
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Добавить сеанс</h4>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="movie_id" class="form-label">Фильм *</label>
+                        <select class="form-select" id="movie_id" name="movie_id" required>
+                            <option value="">Выберите фильм</option>
+                            {% for movie in movies %}
+                            <option value="{{ movie.id }}">{{ movie.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="session_date" class="form-label">Дата *</label>
+                        <input type="date" class="form-control" id="session_date" name="session_date" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="session_time" class="form-label">Время *</label>
+                        <input type="time" class="form-control" id="session_time" name="session_time" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Цена (₽) *</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" required min="1">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-plus me-2"></i>Добавить сеанс
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Список сеансов</h4>
+                
+                {% if sessions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Фильм</th>
+                                <th>Дата и время</th>
+                                <th>Цена</th>
+                                <th>Занято мест</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ session.movie_title }}</strong>
+                                    <p class="text-muted mb-0 small">ID: {{ session.id }}</p>
+                                </td>
+                                <td>
+                                    {{ session.session_date }}<br>
+                                    <small class="text-muted">{{ session.session_time[:5] }}</small>
+                                </td>
+                                <td>{{ session.price }} ₽</td>
+                                <td>
+                                    <span class="badge bg-{% if session.booked_seats > 0 %}warning{% else %}success{% endif %}">
+                                        {{ session.booked_seats }}/{{ cinema_config.total_seats }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if session.booked_seats == 0 %}
+                                    <a href="{{ url_for('rgz.admin_delete_session', session_id=session.id) }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Удалить сеанс?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled title="Нельзя удалить - есть бронирования">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Нет сеансов в базе данных.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Вход в систему</h2>
+                
+                <form method="POST" action="{{ url_for('rgz.login') }}">
+                    <div class="mb-3">
+                        <label for="login" class="form-label">Логин</label>
+                        <input type="text" class="form-control" id="login" name="login" required>
+                        <div class="form-text">Только латинские буквы, цифры и специальные символы</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Не менее 6 символов</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Войти
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-2">Нет аккаунта?</p>
+                    <a href="{{ url_for('rgz.register') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Тестовые аккаунты:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Администратор:</strong></p>
+                        <p>Логин: <code>admin</code></p>
+                        <p>Пароль: <code>Admin123!</code></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Обычный пользователь:</strong></p>
+                        <p>Логин: <code>ivanov</code></p>
+                        <p>Пароль: <code>Ivan123!</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

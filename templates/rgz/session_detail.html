@@ -1,0 +1,297 @@
+{% extends "rgz/base.html" %}
+
+{% block title %}{{ session.movie_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .seat.selected {
+        background-color: #4caf50 !important;
+        color: white !important;
+        transform: scale(1.1);
+    }
+    
+    .seat.legend {
+        width: 25px;
+        height: 25px;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">{{ session.movie_title }}</h2>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><i class="fas fa-calendar me-2"></i><strong>Дата:</strong> {{ session.session_date }}</p>
+                        <p><i class="fas fa-clock me-2"></i><strong>Время:</strong> {{ session.session_time[:5] }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="fas fa-ticket-alt me-2"></i><strong>Цена:</strong> {{ session.price }} ₽</p>
+                        <p><i class="fas fa-user me-2"></i><strong>Забронировано мест:</strong> 
+                            <span id="user-bookings-count">{{ user_bookings_count }}</span>/{{ cinema_config.max_seats_per_user }}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if session.movie_description %}
+                <div class="alert alert-light">
+                    <h5><i class="fas fa-info-circle me-2"></i>Описание:</h5>
+                    <p class="mb-0">{{ session.movie_description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="cinema-layout">
+            <div class="screen mb-5">
+                <h3><i class="fas fa-film me-2"></i>ЭКРАН</h3>
+                <p class="mb-0">Пожалуйста, выберите места ниже</p>
+            </div>
+            
+            <div class="text-center mb-4">
+                <div class="d-flex justify-content-center align-items-center mb-3">
+                    <div class="d-flex align-items-center me-4">
+                        <div class="seat available legend"></div>
+                        <span>Свободно</span>
+                    </div>
+                    <div class="d-flex align-items-center me-4">
+                        <div class="seat booked legend"></div>
+                        <span>Занято</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="seat own-booking legend"></div>
+                        <span>Ваше место</span>
+                    </div>
+                </div>
+                
+                {% if is_past %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Этот сеанс уже прошел. Бронирование недоступно.
+                </div>
+                {% elif not can_book_more %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Вы уже забронировали максимальное количество мест ({{ cinema_config.max_seats_per_user }}) на этот сеанс.
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Нажмите на свободное место, чтобы забронировать его. 
+                    Максимум {{ cinema_config.max_seats_per_user }} мест на сеанс.
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="seats-container text-center">
+                {% for seat in seats %}
+                    {% if seat.col == 1 %}
+                        <div class="mb-3">
+                            <strong>Ряд {{ seat.row }}:</strong>
+                    {% endif %}
+                    
+                    <div class="seat 
+                        {% if seat.booked %} 
+                            {% if seat.booked_by_current %}own-booking{% else %}booked{% endif %}
+                        {% else %} 
+                            available 
+                        {% endif %}"
+                        data-seat="{{ seat.number }}"
+                        {% if not is_past and not seat.booked and can_book_more %}
+                            onclick="bookSeat({{ session.id }}, {{ seat.number }})"
+                        {% elif seat.booked_by_current %}
+                            onclick="cancelBooking({{ session.id }}, {{ seat.number }})"
+                        {% endif %}
+                        title="Место {{ seat.number }}{% if seat.booked %} ({{ seat.user_name }}){% endif %}">
+                        {{ seat.number }}
+                    </div>
+                    
+                    {% if seat.col == cinema_config.cols or loop.last %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4"><i class="fas fa-info-circle me-2"></i>Информация</h4>
+                
+                <div class="alert alert-light mb-4">
+                    <h5>Статус сеанса:</h5>
+                    {% if is_past %}
+                    <span class="badge bg-warning">Прошедший</span>
+                    <p class="mt-2 mb-0">Бронирование мест недоступно</p>
+                    {% else %}
+                    <span class="badge bg-success">Предстоящий</span>
+                    <p class="mt-2 mb-0">Вы можете забронировать места</p>
+                    {% endif %}
+                </div>
+                
+                <div class="alert alert-light">
+                    <h5>Ваши бронирования на этот сеанс:</h5>
+                    <div id="user-bookings-list">
+                        {% if user_bookings_count == 0 %}
+                        <p class="mb-0 text-muted">У вас нет забронированных мест</p>
+                        {% else %}
+                        <ul class="list-unstyled" id="bookings-list">
+                            {% for seat in seats %}
+                                {% if seat.booked_by_current %}
+                                <li>
+                                    <i class="fas fa-chair me-2"></i>Место {{ seat.number }}
+                                    <button class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="cancelBooking({{ session.id }}, {{ seat.number }})">
+                                        Отменить
+                                    </button>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('rgz.sessions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>К списку сеансов
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function bookSeat(sessionId, seatNumber) {
+        $.ajax({
+            url: `/rgz/api/book_seat/${sessionId}/${seatNumber}`,
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    // Обновляем отображение места
+                    const seatElement = $(`[data-seat="${seatNumber}"]`);
+                    seatElement.removeClass('available').addClass('own-booking');
+                    seatElement.attr('onclick', `cancelBooking(${sessionId}, ${seatNumber})`);
+                    seatElement.attr('title', `Место ${seatNumber} (${response.user_name})`);
+                    
+                    // Обновляем счетчик
+                    const countElement = $('#user-bookings-count');
+                    let count = parseInt(countElement.text());
+                    countElement.text(count + 1);
+                    
+                    // Обновляем список бронирований
+                    const bookingsList = $('#bookings-list');
+                    if (bookingsList.length === 0) {
+                        $('#user-bookings-list').html(`
+                            <ul class="list-unstyled" id="bookings-list">
+                                <li>
+                                    <i class="fas fa-chair me-2"></i>Место ${seatNumber}
+                                    <button class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="cancelBooking(${sessionId}, ${seatNumber})">
+                                        Отменить
+                                    </button>
+                                </li>
+                            </ul>
+                        `);
+                    } else {
+                        bookingsList.append(`
+                            <li>
+                                <i class="fas fa-chair me-2"></i>Место ${seatNumber}
+                                <button class="btn btn-sm btn-outline-danger ms-2" 
+                                        onclick="cancelBooking(${sessionId}, ${seatNumber})">
+                                    Отменить
+                                </button>
+                            </li>
+                        `);
+                    }
+                    
+                    // Показываем сообщение об успехе
+                    showFlash('Место успешно забронировано!', 'success');
+                    
+                    // Проверяем лимит
+                    if (count + 1 >= {{ cinema_config.max_seats_per_user }}) {
+                        $('.available').css('cursor', 'not-allowed').attr('onclick', '');
+                        showFlash('Вы достигли лимита бронирований на этот сеанс', 'warning');
+                    }
+                } else {
+                    showFlash(response.error, 'error');
+                }
+            },
+            error: function(xhr) {
+                showFlash('Ошибка при бронировании', 'error');
+            }
+        });
+    }
+    
+    function cancelBooking(sessionId, seatNumber) {
+        if (!confirm('Вы уверены, что хотите отменить бронирование этого места?')) {
+            return;
+        }
+        
+        $.ajax({
+            url: `/rgz/api/cancel_booking/${sessionId}/${seatNumber}`,
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    // Обновляем отображение места
+                    const seatElement = $(`[data-seat="${seatNumber}"]`);
+                    seatElement.removeClass('own-booking').addClass('available');
+                    seatElement.attr('onclick', `bookSeat(${sessionId}, ${seatNumber})`);
+                    seatElement.attr('title', `Место ${seatNumber}`);
+                    
+                    // Обновляем счетчик
+                    const countElement = $('#user-bookings-count');
+                    let count = parseInt(countElement.text());
+                    countElement.text(count - 1);
+                    
+                    // Удаляем из списка бронирований
+                    $(`[data-seat="${seatNumber}"]`).closest('li').remove();
+                    
+                    // Если список пуст, показываем сообщение
+                    if ($('#bookings-list li').length === 0) {
+                        $('#user-bookings-list').html('<p class="mb-0 text-muted">У вас нет забронированных мест</p>');
+                    }
+                    
+                    // Включаем возможность бронирования
+                    $('.available').css('cursor', 'pointer');
+                    
+                    showFlash('Бронирование отменено', 'success');
+                } else {
+                    showFlash(response.error, 'error');
+                }
+            },
+            error: function(xhr) {
+                showFlash('Ошибка при отмене бронирования', 'error');
+            }
+        });
+    }
+    
+    function showFlash(message, type) {
+        const alertClass = type === 'error' ? 'danger' : type;
+        const icon = type === 'error' ? 'exclamation-triangle' : 'check-circle';
+        
+        const flashHtml = `
+            <div class="alert alert-${alertClass} alert-dismissible fade show">
+                <i class="fas fa-${icon} me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        $('.flash-messages').html(flashHtml);
+        
+        // Автоматически скрыть через 5 секунд
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+</script>
+{% endblock %}

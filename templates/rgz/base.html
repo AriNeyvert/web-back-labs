@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Кинотеатр{% endblock %} | РГЗ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --dark-color: #2d3748;
+            --light-color: #f7fafc;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+        
+        .main-container {
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(90deg, var(--danger-color) 0%, #ed64a6 100%);
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .seat {
+            width: 45px;
+            height: 45px;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+        
+        .seat.available {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .seat.available:hover {
+            background-color: #9ae6b4;
+            transform: scale(1.1);
+        }
+        
+        .seat.booked {
+            background-color: #fed7d7;
+            color: #742a2a;
+            cursor: not-allowed;
+        }
+        
+        .seat.own-booking {
+            background-color: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .seat.own-booking:hover {
+            background-color: #90cdf4;
+        }
+        
+        .student-info {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        .session-card {
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .past-session {
+            opacity: 0.7;
+            border-left-color: #a0aec0;
+        }
+        
+        .flash-messages {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .screen {
+            background: linear-gradient(90deg, #4a5568 0%, #2d3748 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cinema-layout {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+            margin-top: 50px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('rgz.index') }}">
+                <i class="fas fa-film me-2"></i>Кинотеатр Синема Парк
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.index') }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.sessions') }}">Сеансы</a>
+                    </li>
+                    {% if session.user_id %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.profile') }}">Мой профиль</a>
+                    </li>
+                    {% endif %}
+                    {% if session.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-crown me-1"></i>Админ
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('rgz.admin_panel') }}">Панель управления</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('rgz.admin_movies') }}">Управление фильмами</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('rgz.admin_sessions') }}">Управление сеансами</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('rgz.admin_users') }}">Управление пользователями</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if session.user_id %}
+                    <li class="nav-item">
+                        <span class="nav-link text-white">
+                            <i class="fas fa-user me-1"></i>{{ session.user_name }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Выход
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Вход
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rgz.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Регистрация
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash сообщения -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Основной контент -->
+    <main class="container main-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Кинотеатр РГЗ</h5>
+                    <p>Система онлайн-бронирования билетов в кинотеатр</p>
+                    <p>Проект выполнен в рамках расчетно-графического задания</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Информация о студенте</h5>
+                    <p><strong>ФИО:</strong> {{ student_info.fio }}</p>
+                    <p><strong>Группа:</strong> {{ student_info.group }}</p>
+                    <p><strong>Дисциплина:</strong> WEB-программирование</p>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">© 2025 НГТУ. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
