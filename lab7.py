@@ -97,3 +97,15 @@ def put_film(id):
     film = request.get_json()
     films[id] = film
     return jsonify(films[id])
+
+@lab7.route('/lab7/rest-api/films/', methods=['POST'])
+def add_film():
+    # Получаем данные о новом фильме из тела запроса
+    film = request.get_json()
+    
+    # Добавляем новый фильм в конец списка
+    films.append(film)
+    
+    # Возвращаем индекс нового элемента (новая длина списка минус 1)
+    new_id = len(films) - 1
+    return jsonify({"id": new_id}), 201
