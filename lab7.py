@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, abort
+from flask import Blueprint, render_template, jsonify, abort, request
 
 lab7 = Blueprint('lab7', __name__)
 
@@ -86,3 +86,14 @@ def del_film(id):
     
     del films[id]
     return '', 204
+
+@lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT'])
+def put_film(id):
+    # Проверяем, что id находится в корректном диапазоне
+    if id < 0 or id >= len(films):
+        # Возвращаем ошибку 404, если id выходит за пределы
+        abort(404, description=f"Фильм с id={id} не найден. Нельзя обновить несуществующий элемент. Доступные id: от 0 до {len(films)-1}")
+    
+    film = request.get_json()
+    films[id] = film
+    return jsonify(films[id])
