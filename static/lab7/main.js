@@ -1,5 +1,7 @@
 // Глобальные функции для работы с модальным окном
 function showModal() {
+    // Очистка сообщения об ошибке при открытии модального окна
+    document.getElementById('description-error').innerText = '';
     document.querySelector('div.modal').style.display = "block";
 }
 
@@ -36,9 +38,21 @@ function sendFilm() {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(film)
     })
-    .then(function() {
-        fillFilmList();
-        hideModal();
+    .then(function(resp){
+        if(resp.ok) {
+            fillFilmList();
+            hideModal();
+            return{};
+        }
+        return resp.json();
+    })
+    .then(function(errors) {
+        if (errors && errors.description) {
+            document.getElementById('description-error').innerText = errors.description;
+        } else if (document.getElementById('description-error').innerText) {
+            // Очищаем ошибку, если её больше нет
+            document.getElementById('description-error').innerText = '';
+        }
     })
     .catch(function(error) {
         console.error('Ошибка при добавлении фильма:', error);
@@ -46,6 +60,9 @@ function sendFilm() {
 }
 
 function editFilm(id) {
+    // Очистка сообщения об ошибке перед открытием формы редактирования
+    document.getElementById('description-error').innerText = '';
+    
     fetch(`/lab7/rest-api/films/${id}`)
     .then(function(data) {
         return data.json();

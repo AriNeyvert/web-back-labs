@@ -95,6 +95,8 @@ def put_film(id):
         abort(404, description=f"Фильм с id={id} не найден. Нельзя обновить несуществующий элемент. Доступные id: от 0 до {len(films)-1}")
     
     film = request.get_json()
+    if film['description'] == '':
+        return {'description': 'Заполните описание'}, 400
     films[id] = film
     return jsonify(films[id])
 
@@ -109,3 +111,5 @@ def add_film():
     # Возвращаем индекс нового элемента (новая длина списка минус 1)
     new_id = len(films) - 1
     return jsonify({"id": new_id}), 201
+
+
