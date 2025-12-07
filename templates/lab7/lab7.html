@@ -24,6 +24,7 @@
         color: #e74c3c;
         font-size: 14px;
         margin-top: 5px;
+        min-height: 20px;
     }
     
     table {
@@ -87,7 +88,7 @@
         background-color: #27ae60;
     }
     
-    input, textarea {
+    input, textarea, select {
         width: 100%;
         padding: 10px;
         margin: 8px 0;
@@ -95,6 +96,12 @@
         border-radius: 4px;
         box-sizing: border-box;
         font-size: 14px;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
     
     textarea {
@@ -149,11 +156,77 @@
         margin: 0;
         color: #2c3e50;
     }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .char-counter {
+        text-align: right;
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .search-container {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .search-container input {
+        flex: 1;
+    }
+    
+    .stats {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .stat-item {
+        background-color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #7f8c8d;
+    }
 </style>
 {% endblock %}
 
 {% block main %}
     <h1>Список фильмов</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Поиск фильмов по названию..." 
+               onkeyup="searchFilms(this.value)">
+        <button onclick="fillFilmList()">Сбросить</button>
+        <button onclick="loadStats()">Статистика</button>
+        <button onclick="addFilm()">Добавить фильм</button>
+    </div>
+    
+    <div id="stats-container" class="stats" style="display: none;">
+        <h3>Статистика по фильмам</h3>
+        <div class="stats-grid" id="stats-grid"></div>
+    </div>
 
     <table>
         <thead>
@@ -166,14 +239,6 @@
         <tbody id="film-list"></tbody>
     </table>
 
-    <script>
-        fillFilmList();
-    </script>
-
-    <div>
-        <button onclick="addFilm()">Добавить фильм</button>
-    </div>
-
     <div class="modal-overlay" onclick="cancel()"></div>
     
     <div class="modal">
@@ -183,31 +248,66 @@
         
         <input type="hidden" id="id">
         
-        <label>
-            Русское название:
+        <div class="form-group">
+            <label for="title-ru">
+                Русское название: *
+            </label>
             <input type="text" id="title-ru" placeholder="Введите название на русском" required>
-        </label>
+            <div id="title-ru-error" class="error-message"></div>
+        </div>
         
-        <label>
-            Оригинальное название:
+        <div class="form-group">
+            <label for="title">
+                Оригинальное название:
+            </label>
             <input type="text" id="title" placeholder="Введите оригинальное название">
-            <small style="color: #666;">Если оставить пустым, будет использовано русское название</small>
-        </label>
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Если оставить пустым, будет использовано русское название
+            </small>
+            <div id="title-error" class="error-message"></div>
+        </div>
         
-        <label>
-            Год выпуска:
-            <input type="number" id="year" min="1900" max="2099" placeholder="2024" required>
-        </label>
+        <div class="form-group">
+            <label for="year">
+                Год выпуска: *
+            </label>
+            <input type="number" id="year" min="1895" max="2099" placeholder="2024" required>
+            <div id="year-error" class="error-message"></div>
+        </div>
         
-        <label>
-            Описание:
-            <textarea id="description" placeholder="Введите описание фильма" required></textarea>
+        <div class="form-group">
+            <label for="description">
+                Описание: *
+            </label>
+            <textarea id="description" placeholder="Введите описание фильма (максимум 2000 символов)" 
+                      maxlength="2000" required></textarea>
+            <div class="char-counter">
+                <span id="char-count">0</span> / 2000 символов
+            </div>
             <div id="description-error" class="error-message"></div>
-        </label>
+        </div>
         
         <div class="modal-buttons">
             <button onclick="cancel()">Отмена</button>
             <button onclick="sendFilm()">Сохранить</button>
         </div>
     </div>
+
+    <script>
+        // Счетчик символов для описания
+        const descriptionTextarea = document.getElementById('description');
+        const charCount = document.getElementById('char-count');
+        
+        descriptionTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+        
+        // Инициализация счетчика
+        charCount.textContent = descriptionTextarea.value.length;
+        
+        // Загружаем фильмы при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            fillFilmList();
+        });
+    </script>
 {% endblock %}

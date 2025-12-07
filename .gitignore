@@ -3,3 +3,4 @@ __pycache__/
 .env
 database.db
 rgz_database.db
+films.db
