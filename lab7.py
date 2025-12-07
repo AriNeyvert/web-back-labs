@@ -21,7 +21,7 @@ films = [
     },
     {
         "title":"The Shawshank Redemption",
-        "title_ru":"побег из Шоушенка",
+        "title_ru":"Побег из Шоушенка",
         "year":1994,
         "description":"Бухгалтер Энди Дюфрейн обвинён в убийстве собственной жены \
         и её любовника. Оказавшись в тюрьме под названием Шоушенк, он сталкивается \
@@ -45,7 +45,7 @@ films = [
     {
         "title":"The Green Mile",
         "title_ru":"Зеленая миля",
-        "year":2019,
+        "year":1999,
         "description":"Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», \
         каждый из узников которого однажды проходит «зеленую милю» по пути к месту \
         казни. Пол повидал много заключённых и надзирателей за время работы. \
@@ -55,7 +55,7 @@ films = [
     {
         "title":"Shutter Island",
         "title_ru":"Остров проклятых",
-        "year":2019,
+        "year":2010,
         "description":"Два американских судебных пристава отправляются на один из \
         островов в штате Массачусетс, чтобы расследовать исчезновение пациентки \
         клиники для умалишенных преступников. При проведении расследования им \
@@ -70,18 +70,14 @@ def get_films():
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET'])
 def get_film(id):
-    # Проверяем, что id находится в корректном диапазоне
     if id < 0 or id >= len(films):
-        # Возвращаем ошибку 404, если id выходит за пределы
         abort(404, description=f"Фильм с id={id} не найден. Доступные id: от 0 до {len(films)-1}")
     
     return jsonify(films[id])
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['DELETE'])
 def del_film(id):
-    # Проверяем, что id находится в корректном диапазоне
     if id < 0 or id >= len(films):
-        # Возвращаем ошибку 404, если id выходит за пределы
         abort(404, description=f"Фильм с id={id} не найден. Нельзя удалить несуществующий элемент. Доступные id: от 0 до {len(films)-1}")
     
     del films[id]
@@ -89,27 +85,37 @@ def del_film(id):
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT'])
 def put_film(id):
-    # Проверяем, что id находится в корректном диапазоне
     if id < 0 or id >= len(films):
-        # Возвращаем ошибку 404, если id выходит за пределы
         abort(404, description=f"Фильм с id={id} не найден. Нельзя обновить несуществующий элемент. Доступные id: от 0 до {len(films)-1}")
     
     film = request.get_json()
+    
+    # Проверяем описание
     if film['description'] == '':
         return {'description': 'Заполните описание'}, 400
+    
+    # Логика для оригинального названия
+    if not film['title'] and film['title_ru']:
+        film['title'] = film['title_ru']
+    
     films[id] = film
     return jsonify(films[id])
 
 @lab7.route('/lab7/rest-api/films/', methods=['POST'])
 def add_film():
-    # Получаем данные о новом фильме из тела запроса
     film = request.get_json()
     
-    # Добавляем новый фильм в конец списка
+    # Проверяем описание
+    if film['description'] == '':
+        return {'description': 'Заполните описание'}, 400
+    
+    # Логика для оригинального названия: если пустое, используем русское название
+    if not film['title'] and film['title_ru']:
+        film['title'] = film['title_ru']
+    
+    # Добавляем фильм в список
     films.append(film)
     
-    # Возвращаем индекс нового элемента (новая длина списка минус 1)
+    # Возвращаем id нового фильма
     new_id = len(films) - 1
     return jsonify({"id": new_id}), 201
-
-
