@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание статьи - Лабораторная работа 8</title>
+    <link rel="stylesheet" href="{{ url_for('lab8.static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #9b2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #fc8181;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 200px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-textarea:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .submit-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .submit-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .cancel-btn {
+            background: #a0aec0;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .cancel-btn:hover {
+            background: #718096;
+            transform: translateY(-2px);
+        }
+        
+        .form-hint {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Создание новой статьи</h1>
+            <p>Заполните форму ниже, чтобы создать новую статью</p>
+            <a href="/lab8/articles" class="back-btn">← Назад к статьям</a>
+        </div>
+        
+        <div class="form-container">
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="/lab8/create">
+                <div class="form-group">
+                    <label class="form-label">Заголовок статьи</label>
+                    <input type="text" 
+                           name="title" 
+                           class="form-input" 
+                           value="{{ title or '' }}" 
+                           placeholder="Введите заголовок статьи"
+                           required>
+                    <div class="form-hint">Заголовок должен быть кратким и информативным</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Содержание статьи</label>
+                    <textarea name="content" 
+                              class="form-textarea" 
+                              placeholder="Напишите содержание вашей статьи здесь..."
+                              required>{{ content or '' }}</textarea>
+                    <div class="form-hint">Поддерживается простой текст. Максимальная длина не ограничена.</div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Опубликовать статью
+                    </button>
+                    <a href="/lab8/articles" class="cancel-btn">
+                        <i class="fas fa-times"></i> Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 НГТУ, ФБИ-33. Лабораторная работа 8</p>
+        </div>
+    </div>
+</body>
+</html>

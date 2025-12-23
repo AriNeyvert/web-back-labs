@@ -1,0 +1,12 @@
+# Установить окончания строк для конкретных типов файлов
+*.py text eol=lf
+*.ini text eol=lf
+*.mako text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.py.mako text eol=lf
+
+# Для бинарных файлов отключить конвертацию
+*.png binary
+*.jpg binary
+*.pdf binary

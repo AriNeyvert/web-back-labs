@@ -15,9 +15,10 @@ from lab8 import lab8
 from rgz import rgz_bp
 import datetime
 import os
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.login_view = 'lab8.login'
 login_manager.init_app(app)
@@ -26,7 +27,7 @@ login_manager.init_app(app)
 def load_users(login_id):
     return users.query.get(int(login_id))
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'very-secret-key-for-flask-app-2025-neivert-arina')
 app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
 
 if app.config['DB_TYPE'] == 'postgres':
