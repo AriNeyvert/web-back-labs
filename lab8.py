@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import db
 from db.models import users, articles
-from flask_login import login_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user
 
 lab8 = Blueprint('lab8', __name__, 
                  template_folder='templates/lab8',
@@ -47,6 +47,7 @@ def register():
     db.session.commit()
     
     # Автоматически логиним пользователя после регистрации
+    login_user(new_user, remember=False)
     session['login'] = login_form
     return redirect('/lab8/')
 
@@ -73,13 +74,20 @@ def login():
     
     if user:
         if check_password_hash(user.password, password_form):
-            '''session['login'] = login_form'''
-            login_user(user, remember = False)
+            login_user(user, remember=False)
+            session['login'] = login_form
             return redirect('/lab8/')
     
     return render_template('lab8/login.html',
                            error='Ошибка входа: логин и/или пароль неверны',
                            login=login_form)  # Сохраняем введенный логин
+
+@lab8.route('/lab8/logout')
+@login_required
+def logout():
+    logout_user()
+    session.pop('login', None)  # Удаляем логин из сессии
+    return redirect('/lab8/')
 
 @lab8.route('/lab8/articles/')
 @login_required

@@ -109,6 +109,116 @@
         .create-card .btn { background: #f56565; }
         .create-card .btn:hover { background: #e53e3e; }
         
+        /* Стили для блока авторизации */
+        .auth-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-info {
+            margin-bottom: 20px;
+        }
+        
+        .auth-info p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+        
+        .user-greeting {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .user-greeting i {
+            color: #ed64a6;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .auth-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            min-width: 140px;
+        }
+        
+        .login-btn {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .login-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .register-btn {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .register-btn:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(237, 137, 54, 0.3);
+        }
+        
+        .logout-btn {
+            background: #f56565;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.3);
+        }
+        
+        .logout-btn i {
+            font-size: 1.1em;
+        }
+        
+        .not-authorized {
+            background: #f7fafc;
+            border: 2px dashed #cbd5e0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .not-authorized p {
+            color: #718096;
+            margin-bottom: 15px;
+        }
+        
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -139,8 +249,24 @@
             .nav-links {
                 grid-template-columns: 1fr;
             }
+            
+            .auth-section {
+                padding: 20px;
+                margin: 20px 10px;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .auth-btn {
+                width: 100%;
+            }
         }
     </style>
+    <!-- Подключаем FontAwesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -176,6 +302,30 @@
                 <p>Напишите и опубликуйте новую статью</p>
                 <span class="btn">Создать статью</span>
             </a>
+        </div>
+        
+        <!-- Блок авторизации -->
+        <div class="auth-section">
+            {% if current_user.is_authenticated %}
+                <div class="user-greeting">
+                    <i class="fas fa-user-check"></i>
+                    <span>Вы вошли в систему как: <strong>{{ current_user.login }}</strong></span>
+                </div>
+                <div class="auth-info">
+                    <p>Теперь вы можете создавать и редактировать статьи, а также управлять своим профилем.</p>
+                </div>
+                <div class="auth-buttons">
+                    <a href="{{ url_for('lab8.logout') }}" class="auth-btn logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Выйти из системы
+                    </a>
+                </div>
+            {% else %}
+                <div class="not-authorized">
+                    <p><i class="fas fa-exclamation-circle"></i> Вы не авторизованы в системе</p>
+                    <p>Для доступа ко всем функциям (создание статей, управление контентом) необходимо войти в систему.</p>
+                </div>
+            {% endif %}
         </div>
         
         <div class="footer">
