@@ -424,6 +424,48 @@
         background: #dd6b20;
     }
 </style>
+<!-- Блок публичных статей -->
+{% if public_articles %}
+<div class="public-articles-section">
+    <div class="articles-header">
+        <h2>Публичные статьи других авторов</h2>
+        <a href="/lab8/public" class="view-all-btn">Посмотреть все</a>
+    </div>
+    <div class="articles-preview">
+        {% for article in public_articles[:3] %}
+        <div class="article-preview public-article">
+            <h3>{{ article.title }}</h3>
+            <p class="article-author">
+                <i class="fas fa-user"></i> {{ article.user_login }}
+            </p>
+            <p class="article-excerpt">
+                {{ article.article_text[:100] }}{% if article.article_text|length > 100 %}...{% endif %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.public-articles-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.public-article {
+    border-left: 5px solid #48bb78;
+}
+
+.article-author {
+    color: #718096;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+</style>
+{% endif %}
 {% endif %}
 
         <div class="footer">

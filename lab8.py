@@ -16,17 +16,32 @@ def index():
     # Если пользователь авторизован через Flask-Login, используем его данные
     if current_user.is_authenticated:
         username = current_user.login
+        
+        # Получаем свои статьи
+        user_articles = articles.query.filter_by(login_id=current_user.id).all()
+        
+        # Получаем публичные статьи других пользователей
+        public_articles = articles.query.filter(
+            db.and_(
+                articles.is_public == True,
+                articles.login_id != current_user.id
+            )
+        ).all()
     else:
         username = session.get('login', 'anonymous')
+        user_articles = []
+        
+        # Для неавторизованных - все публичные статьи
+        public_articles = articles.query.filter_by(is_public=True).all()
     
-    # Получаем статьи текущего пользователя
-    user_articles = []
-    if current_user.is_authenticated:
-        user_articles = articles.query.filter_by(login_id=current_user.id).all()
+    # Обрабатываем статьи для отображения
+    for article in public_articles:
+        article.user_login = users.query.get(article.login_id).login
     
     return render_template('lab8/index.html', 
                           username=username, 
-                          user_articles=user_articles)
+                          user_articles=user_articles,
+                          public_articles=public_articles)
 
 @lab8.route('/lab8/register/', methods=['GET', 'POST'])
 def register():
@@ -73,7 +88,7 @@ def login():
 
     login_form = request.form.get('login')
     password_form = request.form.get('password')
-    remember = request.form.get('remember') == 'on'  # Получаем значение галочки "запомнить меня"
+    remember = request.form.get('remember') == 'on'
     
     # Проверка на пустые значения для формы входа
     if not login_form or not login_form.strip():
@@ -102,7 +117,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    session.pop('login', None)  # Удаляем логин из сессии
+    session.pop('login', None)
     return redirect('/lab8/')
 
 @lab8.route('/lab8/articles/')
@@ -110,7 +125,22 @@ def logout():
 def article_list():
     # Получаем все статьи текущего пользователя
     user_articles = articles.query.filter_by(login_id=current_user.id).all()
-    return render_template('lab8/articles.html', articles=user_articles)
+    
+    # Получаем публичные статьи других пользователей
+    public_articles = articles.query.filter(
+        db.and_(
+            articles.is_public == True,
+            articles.login_id != current_user.id
+        )
+    ).all()
+    
+    # Добавляем логины авторов
+    for article in public_articles:
+        article.user_login = users.query.get(article.login_id).login
+    
+    return render_template('lab8/articles.html', 
+                          articles=user_articles,
+                          public_articles=public_articles)
 
 @lab8.route('/lab8/create', methods=['GET', 'POST'])
 @login_required
@@ -120,6 +150,7 @@ def create():
     
     title = request.form.get('title')
     content = request.form.get('content')
+    is_public = request.form.get('is_public') == 'on'
     
     if not title or not title.strip():
         return render_template('lab8/create.html',
@@ -133,13 +164,12 @@ def create():
                                title=title,
                                content=content)
     
-    # Создаем новую статью (убрано created_at из параметров)
+    # Создаем новую статью
     new_article = articles(
         title=title,
         article_text=content,
         login_id=current_user.id,
-        is_public=True
-        # created_at заполнится автоматически через default=datetime.utcnow
+        is_public=is_public
     )
     
     db.session.add(new_article)
@@ -160,6 +190,7 @@ def edit(article_id):
     
     title = request.form.get('title')
     content = request.form.get('content')
+    is_public = request.form.get('is_public') == 'on'
     
     if not title or not title.strip():
         return render_template('lab8/edit.html',
@@ -171,10 +202,10 @@ def edit(article_id):
                                article=article,
                                error='Содержание статьи не может быть пустым')
     
-    # Обновляем статью (убрано обновление created_at)
+    # Обновляем статью
     article.title = title
     article.article_text = content
-    # created_at не обновляем, оно остается оригинальной датой создания
+    article.is_public = is_public
     
     db.session.commit()
     
@@ -190,3 +221,51 @@ def delete(article_id):
         db.session.commit()
     
     return redirect('/lab8/articles')
+
+# НОВЫЙ РОУТ: Поиск статей
+@lab8.route('/lab8/search', methods=['GET', 'POST'])
+def search():
+    search_query = request.args.get('q') or request.form.get('q', '')
+    search_results = []
+    
+    if search_query:
+        # Используем метод поиска из модели
+        if current_user.is_authenticated:
+            current_user_id = current_user.id
+        else:
+            current_user_id = None
+        
+        search_results = articles.search_articles(
+            search_query=search_query,
+            current_user_id=current_user_id,
+            include_public=True
+        )
+        
+        # Добавляем логины авторов
+        for article in search_results:
+            if article.login_id:
+                user = users.query.get(article.login_id)
+                if user:
+                    article.user_login = user.login
+                else:
+                    article.user_login = 'Неизвестный автор'
+    
+    return render_template('lab8/search.html',
+                          search_query=search_query,
+                          search_results=search_results,
+                          is_authenticated=current_user.is_authenticated)
+
+# НОВЫЙ РОУТ: Публичные статьи (для всех)
+@lab8.route('/lab8/public')
+def public_articles():
+    # Получаем все публичные статьи
+    public_articles_list = articles.query.filter_by(is_public=True).all()
+    
+    # Добавляем информацию об авторах
+    for article in public_articles_list:
+        author = users.query.get(article.login_id)
+        article.author_name = author.login if author else 'Неизвестный автор'
+    
+    return render_template('lab8/public_articles.html',
+                          articles=public_articles_list,
+                          is_authenticated=current_user.is_authenticated)

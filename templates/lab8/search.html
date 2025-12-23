@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск статей - Лабораторная работа 8</title>
+    <link rel="stylesheet" href="{{ url_for('lab8.static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        
+        .search-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .search-results {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-count {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #48bb78;
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .article-title {
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .article-author {
+            color: #718096;
+            font-style: italic;
+        }
+        
+        .article-content {
+            color: #4a5568;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        
+        .article-meta {
+            color: #718096;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .no-results i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #cbd5e0;
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background: #a0aec0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .nav-btn:hover {
+            background: #718096;
+        }
+        
+        .back-btn {
+            background: #667eea;
+        }
+        
+        .back-btn:hover {
+            background: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Поиск статей</h1>
+            <p>Найдите статьи по заголовку или содержанию</p>
+            
+            <form method="GET" action="{{ url_for('lab8.search') }}" class="search-form">
+                <input type="text" 
+                       name="q" 
+                       class="search-input" 
+                       value="{{ search_query }}" 
+                       placeholder="Введите текст для поиска...">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i> Искать
+                </button>
+            </form>
+            
+            <div class="navigation">
+                <a href="/lab8/" class="nav-btn back-btn">
+                    <i class="fas fa-home"></i> На главную
+                </a>
+                <a href="/lab8/public" class="nav-btn">
+                    <i class="fas fa-globe"></i> Все публичные статьи
+                </a>
+                {% if is_authenticated %}
+                <a href="/lab8/articles" class="nav-btn">
+                    <i class="fas fa-newspaper"></i> Мои статьи
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if search_query %}
+        <div class="search-results">
+            <div class="result-count">
+                Найдено статей: {{ search_results|length }}
+                {% if search_query %}
+                    по запросу: "{{ search_query }}"
+                {% endif %}
+            </div>
+            
+            {% if search_results %}
+                {% for article in search_results %}
+                <div class="article-card">
+                    <div class="article-header">
+                        <h3 class="article-title">{{ article.title }}</h3>
+                        <div class="article-author">
+                            Автор: {{ article.user_login }}
+                        </div>
+                    </div>
+                    
+                    <div class="article-content">
+                        {% if search_query %}
+                            {# Здесь можно реализовать подсветку найденных слов #}
+                            {{ article.article_text[:200] }}
+                            {% if article.article_text|length > 200 %}...{% endif %}
+                        {% else %}
+                            {{ article.article_text[:200] }}
+                            {% if article.article_text|length > 200 %}...{% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="article-meta">
+                        <span>
+                            <i class="far fa-calendar"></i> 
+                            {{ article.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </span>
+                        <span>
+                            {% if article.is_public %}
+                                <i class="fas fa-globe"></i> Публичная
+                            {% else %}
+                                <i class="fas fa-lock"></i> Приватная
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>Статьи не найдены</h3>
+                    <p>Попробуйте изменить запрос поиска</p>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

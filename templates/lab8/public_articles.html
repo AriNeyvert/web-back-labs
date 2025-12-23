@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Публичные статьи - Лабораторная работа 8</title>
+    <link rel="stylesheet" href="{{ url_for('lab8.static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .articles-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #48bb78;
+        }
+        
+        .article-title {
+            color: #2d3748;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .article-author {
+            color: #718096;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .article-content {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .article-meta {
+            color: #718096;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .no-articles {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .no-articles i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #cbd5e0;
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .nav-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .search-btn {
+            background: #48bb78;
+        }
+        
+        .search-btn:hover {
+            background: #38a169;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Публичные статьи</h1>
+            <p>Все статьи, которые авторы сделали публичными</p>
+            
+            <div class="navigation">
+                <a href="/lab8/" class="nav-btn">
+                    <i class="fas fa-home"></i> На главную
+                </a>
+                <a href="/lab8/search" class="nav-btn search-btn">
+                    <i class="fas fa-search"></i> Поиск статей
+                </a>
+                {% if is_authenticated %}
+                <a href="/lab8/articles" class="nav-btn">
+                    <i class="fas fa-newspaper"></i> Мои статьи
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="articles-container">
+            <h2>Все публичные статьи ({{ articles|length }})</h2>
+            
+            {% if articles %}
+                {% for article in articles %}
+                <div class="article-card">
+                    <h3 class="article-title">{{ article.title }}</h3>
+                    <div class="article-author">
+                        <i class="fas fa-user"></i> Автор: {{ article.author_name }}
+                    </div>
+                    
+                    <div class="article-content">
+                        {{ article.article_text[:300] }}
+                        {% if article.article_text|length > 300 %}...{% endif %}
+                    </div>
+                    
+                    <div class="article-meta">
+                        <span>
+                            <i class="far fa-calendar"></i> 
+                            {{ article.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </span>
+                        <span>
+                            <i class="fas fa-globe"></i> Публичная статья
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-articles">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>Публичных статей пока нет</h3>
+                    <p>Станьте первым, кто опубликует статью!</p>
+                    {% if not is_authenticated %}
+                    <p><a href="/lab8/login">Войдите</a> или <a href="/lab8/register">зарегистрируйтесь</a>, чтобы создать статью</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
