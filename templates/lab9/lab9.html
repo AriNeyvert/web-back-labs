@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новогодние Подарки - Lab9</title>
+    <link rel="stylesheet" href="{{ url_for('lab9.static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255, 50, 50, 0.1);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+            font-family: 'Georgia', serif;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            position: relative;
+        }
+
+        .stat-box h3 {
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        #unopened-count {
+            font-size: 2rem;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        #opened-count {
+            font-size: 2rem;
+            color: #FF5252;
+            font-weight: bold;
+        }
+
+        .gifts-wrapper {
+            position: relative;
+            min-height: 500px;
+            margin: 30px 0;
+        }
+
+        .gifts-container {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            /* Ограничиваем область для коробок */
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gift-box {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            width: 180px;
+            height: 180px;
+            z-index: 5;
+        }
+
+        .gift-box:hover:not(.opened) {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 6;
+        }
+
+        .gift-box.opened {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .gift-box .box {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .gift-box .lid {
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(45deg, #FF5252, #FF9800);
+            position: absolute;
+            top: 0;
+            border-radius: 10px 10px 0 0;
+            transition: transform 0.5s ease;
+            transform-origin: top;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .gift-box.opened .lid {
+            transform: rotateX(-120deg);
+        }
+
+        .gift-box .body {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            position: absolute;
+            top: 40px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Зоны, которые должны быть свободны от коробок */
+        .safe-zone {
+            position: absolute;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .safe-zone.instructions {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: transparent;
+        }
+
+        .safe-zone.reset-btn {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 60px;
+            background: transparent;
+        }
+
+        .instructions-container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            position: relative;
+            z-index: 15;
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions-container i {
+            color: #FFD700;
+            margin-right: 10px;
+        }
+
+        .gift-content {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            border: 2px solid #FFD700;
+        }
+
+        .gift-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -40%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #FF5252;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .gift-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .congratulation {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .message-box.error {
+            background: rgba(255, 87, 87, 0.9);
+            border-left: 5px solid #FF5252;
+        }
+
+        .message-box.success {
+            background: rgba(76, 175, 80, 0.9);
+            border-left: 5px solid #4CAF50;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .reset-btn-container {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            z-index: 15;
+        }
+
+        .reset-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #FF5252, #FF9800);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            z-index: 20;
+            position: relative;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+        }
+
+        .reset-btn i {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .gift-box {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .gift-box .body {
+                height: 110px;
+                font-size: 1rem;
+            }
+            
+            .gift-box .lid {
+                height: 40px;
+            }
+            
+            .safe-zone.reset-btn {
+                width: 250px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Снежинки -->
+    <div class="snowflakes" id="snowflakes"></div>
+    
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>🎄 Новогодние Подарки 🎁</h1>
+                <p class="subtitle">Выберите коробку и получите новогодний подарок!</p>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <h3>Осталось подарков:</h3>
+                        <div id="unopened-count">10</div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Открыто вами:</h3>
+                        <div id="opened-count">0/3</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Защищенная зона для инструкций -->
+        <div class="safe-zone instructions"></div>
+        <div class="instructions-container">
+            <p><i class="fas fa-info-circle"></i>Вы можете открыть только 3 коробки. Удачи!</p>
+        </div>
+
+        <div class="gifts-wrapper">
+            <div class="gifts-container" id="gifts-container">
+                <!-- Подарки будут загружены через JavaScript -->
+            </div>
+        </div>
+
+        <!-- Защищенная зона для кнопки сброса -->
+        <div class="safe-zone reset-btn"></div>
+        <div class="reset-btn-container">
+            <button class="reset-btn" onclick="resetGifts()">
+                <i class="fas fa-redo"></i> Сбросить все подарки
+            </button>
+        </div>
+    </div>
+
+    <!-- Оверлей для модального окна -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Модальное окно с подарком -->
+    <div class="gift-content" id="gift-content">
+        <button class="close-btn" onclick="closeGift()">&times;</button>
+        <img id="gift-image" class="gift-image" src="" alt="Подарок">
+        <div class="congratulation" id="congratulation"></div>
+    </div>
+
+    <!-- Сообщения -->
+    <div class="message-box" id="message-box"></div>
+
+    <script>
+        let gifts = {};
+        
+        // Создаем снежинки
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes');
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.style.width = Math.random() * 10 + 5 + 'px';
+                snowflake.style.height = snowflake.style.width;
+                snowflake.style.left = Math.random() * 100 + 'vw';
+                snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+                snowflake.style.animationDuration = Math.random() * 10 + 10 + 's';
+                snowflake.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(snowflake);
+            }
+        }
+    
+        // Загружаем подарки
+        async function loadGifts() {
+            try {
+                const response = await fetch('/lab9/get_gifts');
+                const data = await response.json();
+                gifts = data.gifts;
+                updateStats(data.unopened_count, data.opened_count || 0);
+                renderGifts();
+                
+                // Показываем статус пользователя
+                if (data.opened_count >= 3) {
+                    showMessage('Вы уже открыли максимальное количество коробок (3)!', 'info');
+                }
+            } catch (error) {
+                console.error('Error loading gifts:', error);
+                showMessage('Ошибка загрузки подарков', 'error');
+            }
+        }
+    
+        // Отображаем подарки
+        function renderGifts() {
+            const container = document.getElementById('gifts-container');
+            container.innerHTML = '';
+            
+            // Сортируем коробки: сначала открытые, потом закрытые
+            const sortedGifts = Object.values(gifts).sort((a, b) => {
+                if (a.opened === b.opened) return 0;
+                return a.opened ? -1 : 1;
+            });
+            
+            sortedGifts.forEach(gift => {
+                const giftElement = document.createElement('div');
+                giftElement.className = `gift-box ${gift.opened ? 'opened' : ''}`;
+                giftElement.style.top = `${gift.position.top}%`;
+                giftElement.style.left = `${gift.position.left}%`;
+                
+                giftElement.innerHTML = `
+                    <div class="box">
+                        <div class="lid"></div>
+                        <div class="body">
+                            ${gift.opened ? '🎁 Пусто' : '🎁 Подарок'}
+                        </div>
+                    </div>
+                `;
+                
+                if (!gift.opened) {
+                    giftElement.onclick = () => openGift(gift.id);
+                    giftElement.title = "Нажмите, чтобы открыть";
+                } else {
+                    giftElement.title = "Эта коробка уже пуста";
+                }
+                
+                container.appendChild(giftElement);
+            });
+        }
+    
+        // Открываем подарок
+        async function openGift(giftId) {
+            try {
+                const response = await fetch('/lab9/open_gift', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ gift_id: giftId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('congratulation').textContent = data.congratulation;
+                    document.getElementById('gift-image').src = `/static/lab9/${data.gift_image}`;
+                    
+                    document.getElementById('overlay').classList.add('active');
+                    document.getElementById('gift-content').classList.add('active');
+                    
+                    updateStats(data.unopened_count, data.opened_count);
+                    
+                    // Обновляем локальные данные
+                    if (gifts[giftId]) {
+                        gifts[giftId].opened = true;
+                    }
+                    
+                    renderGifts();
+                    
+                    showMessage('Поздравляем с получением подарка!', 'success');
+                    
+                    // Если пользователь открыл все доступные коробки
+                    if (data.opened_count >= 3) {
+                        setTimeout(() => {
+                            showMessage('Вы открыли все доступные коробки! Больше коробок открыть нельзя.', 'info');
+                        }, 1000);
+                    }
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error opening gift:', error);
+                showMessage('Ошибка при открытии подарка', 'error');
+            }
+        }
+    
+        // Закрываем модальное окно
+        function closeGift() {
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('gift-content').classList.remove('active');
+        }
+    
+        // Обновляем статистику
+        function updateStats(unopenedCount, openedCount) {
+            document.getElementById('unopened-count').textContent = unopenedCount;
+            document.getElementById('opened-count').textContent = `${openedCount}/3`;
+            
+            // Обновляем цвет счетчика, если пользователь достиг лимита
+            const openedElement = document.getElementById('opened-count');
+            if (openedCount >= 3) {
+                openedElement.style.color = '#FF5252';
+            } else {
+                openedElement.style.color = '#4CAF50';
+            }
+        }
+    
+        // Показываем сообщения
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = text;
+            messageBox.className = `message-box ${type} show`;
+            
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+    
+        // Сброс подарков
+        async function resetGifts() {
+            if (confirm('Вы уверены, что хотите сбросить все подарки? Это действие нельзя отменить!')) {
+                try {
+                    const response = await fetch('/lab9/reset', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        loadGifts();
+                        showMessage('Все подарки сброшены!', 'success');
+                    } else {
+                        showMessage('Ошибка при сбросе подарков', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error resetting gifts:', error);
+                    showMessage('Ошибка при сбросе', 'error');
+                }
+            }
+        }
+    
+        // Запрашиваем статистику
+        async function updateStatistics() {
+            try {
+                const response = await fetch('/lab9/get_stats');
+                const data = await response.json();
+                
+                // Можно отобразить дополнительную статистику
+                console.log('Statistics:', data);
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+            }
+        }
+    
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            createSnowflakes();
+            loadGifts();
+            
+            // Закрытие по клику на оверлей
+            document.getElementById('overlay').onclick = closeGift;
+            
+            // Обновляем статистику каждые 30 секунд
+            setInterval(updateStatistics, 30000);
+        });
+    </script>
+</body>
+</html>
